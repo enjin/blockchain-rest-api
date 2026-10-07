@@ -6,6 +6,29 @@ See [standard-version](https://github.com/conventional-changelog/standard-versio
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.3.2] (2026-10-07)
+
+### Fixes
+
+- **Stop under-reporting staking payouts after a re-nomination**: `/accounts/{id}/staking-payouts`
+  discovered which validators to query from the account's *current* nominations, which are not
+  necessarily the ones it was exposed to in the era being asked about. A bulk scan existed for that
+  case but only ran when the targeted lookup returned nothing, so a partial result was treated as
+  complete and every validator the account had since dropped was missing, silently and always
+  downwards. `Nominations.submitted_in` now decides: strictly before the era means the current
+  targets were already in place and the fast path is correct, anything else falls through to the
+  scan. Eras at or after the last nomination are unaffected. (#423)
+
+### Other
+
+- **Log transaction submissions**: `POST /transaction` emitted nothing at any level, so a
+  transaction that went in and disappeared left no record it had arrived. It now logs the extrinsic
+  hash and length on the way out and the outcome with elapsed time, both at `info`, so a send with
+  no matching outcome for the same hash identifies a stuck submission. The full payload is logged at
+  `trace` only. `README.md` records that `SAS_LOG_LEVEL` accepts full `EnvFilter` directives, which
+  is how the RPC layer is turned up. (#425)
+- CI: bump `dtolnay/rust-toolchain`. (#424)
+
 ## [0.3.1] (2026-10-06)
 
 ### Fixes
@@ -37,13 +60,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   lightweight tag with nothing to sign, and `v0.3.0` went out unsigned as a result (#418). (#417)
 - CI: bump `github-action-benchmark` to v1.22.2, `setup-buildx-action` to v4.4.0, `build-push-action`
   to v7.4.0 and `dtolnay/rust-toolchain` to current master. (#419)
-
-### Known limitations
-
-- **The `v0.3.0` tag is unsigned** and needs re-cutting as a signed annotated tag; tracked in #418.
-- **A v5 General extrinsic is still reported as unsigned.** Its signature lives in the
-  `VerifyMultiSignature` transaction extension rather than a signature field, so `signature` is `null`
-  and `paysFee` is `false` even when the block's own `TransactionFeePaid` event shows a fee was paid.
 
 ## [0.3.0] (2026-09-17)
 
@@ -86,13 +102,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   subxt 0.51.0 carries the upstream fix ([paritytech/subxt#2277](https://github.com/paritytech/subxt/pull/2277)),
   so v4 extrinsics resolve to transaction extension version 0 without our help. Responses are unchanged. (#415)
 - CI: bump `actions/deploy-pages`, `fast-uri` and `postcss-selector-parser`. (#404, #401, #400)
-
-### Known limitations
-
-- **A v5 General extrinsic is still reported as unsigned.** Its signature lives in the
-  `VerifyMultiSignature` transaction extension rather than a signature field, so `signature` is `null` and
-  `paysFee` is `false` even when the block's own `TransactionFeePaid` event shows a fee was paid. These are
-  rare today but will grow.
 
 ## [0.2.1] (2026-09-10)
 
@@ -141,14 +150,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   failures are now distinguished, an unrecognised layout is logged with byte length and hex prefix, and
   new public `utils::is_transient_backend_error` / `utils::is_transient_storage_error` classify a
   failure as retryable (`503`) or definitive (`500`). (#386)
-
-### Known limitations
-
-- **The same false-default pattern remains outside those four reads**: on a transient failure
-  `/accounts/{id}/staking-info` still returns `200` with fabricated `rewardDestination: "Staked"`,
-  `nominations: []`, `numSlashingSpans: 0`; `/accounts/{id}/staking-payouts`, `/pallets/*`, nomination
-  pools and foreign assets likewise. There, absence of a `503` does not yet mean the data is real.
-  Tracked in #387, targeted for `0.3.0`.
 
 ### Other
 
