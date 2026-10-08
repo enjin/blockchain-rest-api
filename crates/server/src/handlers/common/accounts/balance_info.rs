@@ -171,6 +171,8 @@ pub fn get_default_token_symbol(spec_name: &str) -> String {
         "westend" | "westmint" => "WND".to_string(),
         "rococo" => "ROC".to_string(),
         "paseo" => "PAS".to_string(),
+        "enjin" | "matrix-enjin" => "ENJ".to_string(),
+        "canary" | "matrix" => "cENJ".to_string(),
         _ => "UNIT".to_string(),
     }
 }
@@ -185,6 +187,7 @@ pub fn get_default_token_decimals(spec_name: &str) -> u8 {
         "westend" | "westmint" => 12,
         "rococo" => 12,
         "paseo" => 12,
+        "enjin" | "canary" | "matrix-enjin" | "matrix" => 18,
         _ => 12,
     }
 }
@@ -197,6 +200,7 @@ pub fn get_default_existential_deposit(spec_name: &str) -> u128 {
         "polkadot" | "statemint" => 10_000_000_000, // 1 DOT = 10^10 planck, ED = 1 DOT on Polkadot Asset Hub
         "kusama" | "statemine" => 33_333_333,       // ~0.000033 KSM on Kusama Asset Hub
         "westend" | "westmint" => 1_000_000_000_000, // 1 WND on Westend
+        "enjin" | "canary" | "matrix-enjin" | "matrix" => 100_000_000_000_000_000, // 0.1 ENJ / cENJ
         _ => 1_000_000_000_000,                     // Default
     }
 }

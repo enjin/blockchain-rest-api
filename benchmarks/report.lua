@@ -10,7 +10,7 @@ local report = {}
 function report.done()
     return function(summary, latency, requests)
         local endpoint = os.getenv("BENCH_ENDPOINT") or "unknown"
-        local service = os.getenv("BENCH_SERVICE") or "polkadot-rest-api"
+        local service = os.getenv("BENCH_SERVICE") or "blockchain-rest-api"
         local scenario = os.getenv("BENCH_SCENARIO") or "unknown"
         local hardware = os.getenv("BENCH_HARDWARE") or "unknown"
         local threads = os.getenv("BENCH_THREADS") or "0"

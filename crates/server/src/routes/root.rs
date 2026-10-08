@@ -17,8 +17,8 @@ pub async fn root_handler(State(state): State<AppState>) -> Json<Value> {
     let routes = state.route_registry.routes();
 
     Json(json!({
-        "docs": "https://github.com/paritytech/polkadot-rest-api",
-        "github": "https://github.com/paritytech/polkadot-rest-api",
+        "docs": "https://github.com/enjin/blockchain-rest-api",
+        "github": "https://github.com/enjin/blockchain-rest-api",
         "version": env!("CARGO_PKG_VERSION"),
         "listen": format!("{}:{}", state.config.express.bind_host, state.config.express.port),
         "routes": routes

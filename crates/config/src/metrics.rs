@@ -53,7 +53,7 @@ pub struct MetricsConfig {
     /// Prometheus server port
     pub prom_port: u16,
 
-    /// Prometheus metric name prefix (default: "polkadot_rest_api")
+    /// Prometheus metric name prefix (default: "enjin_rest_api")
     pub prometheus_prefix: String,
 
     /// Loki server host (for log aggregation)
@@ -72,7 +72,7 @@ impl Default for MetricsConfig {
             enabled: false,
             prom_host: "127.0.0.1".to_string(),
             prom_port: 9100,
-            prometheus_prefix: "polkadot_rest_api".to_string(),
+            prometheus_prefix: "enjin_rest_api".to_string(),
             loki_host: "127.0.0.1".to_string(),
             loki_port: 3100,
             include_queryparams: false,
@@ -136,7 +136,7 @@ mod tests {
         assert!(!config.enabled);
         assert_eq!(config.prom_host, "127.0.0.1");
         assert_eq!(config.prom_port, 9100);
-        assert_eq!(config.prometheus_prefix, "polkadot_rest_api");
+        assert_eq!(config.prometheus_prefix, "enjin_rest_api");
         assert_eq!(config.loki_host, "127.0.0.1");
         assert_eq!(config.loki_port, 3100);
         assert!(!config.include_queryparams);

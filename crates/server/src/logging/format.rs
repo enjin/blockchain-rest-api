@@ -35,7 +35,7 @@ pub struct HttpAwareFormat {
 impl HttpAwareFormat {
     pub fn new(strip_ansi: bool) -> Self {
         let inner = format::format()
-            .with_target(true)
+            .with_target(false)
             .with_file(true)
             .with_line_number(true)
             .with_ansi(!strip_ansi);
@@ -173,7 +173,7 @@ impl Default for HttpAwareJsonFormat {
 impl HttpAwareJsonFormat {
     pub fn new() -> Self {
         Self {
-            inner: format::format().json(),
+            inner: format::format().json().with_target(false),
         }
     }
 }

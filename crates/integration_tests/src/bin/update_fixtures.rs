@@ -55,7 +55,7 @@ async fn main() -> Result<()> {
     if !wait_for_api(&client, &api_url).await? {
         anyhow::bail!(
             "API is not available at {}. Please start the server first.\n\
-            Example:\n  export SAS_SUBSTRATE_URL=wss://rpc.polkadot.io\n  cargo run --release --bin polkadot-rest-api",
+            Example:\n  export SAS_SUBSTRATE_URL=wss://rpc.polkadot.io\n  cargo run --release --bin enjin-rest-api",
             api_url
         );
     }

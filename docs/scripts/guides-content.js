@@ -1,14 +1,12 @@
 // Copyright (C) 2026 Parity Technologies (UK) Ltd.
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// Guide content for Polkadot REST API Documentation
+// Guide content for Enjin Blockchain REST API Documentation
 // This file imports markdown files and converts them to HTML
 
-import assetHubMigrationMd from '../guides/ASSET_HUB_MIGRATION.md';
 import useRcBlock from '../guides/USE_RC_BLOCK_SPEC.md';
 import advancedConfigMd from '../guides/ADVANCED_CONFIG.md';
 import openapiUtoipaMd from '../guides/OPENAPI_UTOIPA.md';
-import addingBenchmarksMd from '../guides/adding-benchmarks.md';
 import migrationMd from '../guides/MIGRATION.md';
 
 // Process markdown tables and convert to HTML
@@ -170,37 +168,27 @@ function escapeHtml(text) {
 
 // Export guide content with HTML conversion
 export const GUIDES_CONTENT = {
-    'asset-hub-migration': convertMarkdownToHtml(assetHubMigrationMd),
     'useRcBlock-spec': convertMarkdownToHtml(useRcBlock),
     'advanced-config': convertMarkdownToHtml(advancedConfigMd),
     'openapi-utoipa': convertMarkdownToHtml(openapiUtoipaMd),
-    'adding-benchmarks': convertMarkdownToHtml(addingBenchmarksMd),
     'migration': convertMarkdownToHtml(migrationMd)
 };
 
 export const GUIDE_METADATA = {
-    'asset-hub-migration': {
-        title: 'Asset Hub Migration & Elastic Scaling Guide',
-        description: 'Migration guide for Asset Hub endpoints and elastic scaling functionality'
-    },
     'useRcBlock-spec': {
         title: 'useRcBlock specification',
         description: 'The specification for useRcBlock'
     },
     'advanced-config': {
         title: 'Advanced Configuration Guide',
-        description: 'Complete guide to all Polkadot REST API configuration options'
+        description: 'Complete guide to all Enjin Blockchain REST API configuration options'
     },
     'openapi-utoipa': {
         title: 'OpenAPI & utoipa Guide',
         description: 'How to add and maintain OpenAPI documentation with utoipa annotations'
     },
-    'adding-benchmarks': {
-        title: 'Adding Benchmarks',
-        description: 'Guide to adding performance benchmarks for new API endpoints'
-    },
     'migration': {
         title: 'Migration Guide',
-        description: 'Migration guide from Substrate API Sidecar to Polkadot REST API'
+        description: 'Migration guide from Substrate API Sidecar to Enjin Blockchain REST API'
     }
 };

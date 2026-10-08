@@ -6,14 +6,14 @@ use utoipa::OpenApi;
 #[derive(OpenApi)]
 #[openapi(
     info(
-        title = "Polkadot REST API",
+        title = "Enjin Blockchain REST API",
         version = "0.3.2",
-        description = "High-performance Rust REST API for Substrate/Polkadot blockchain data. Drop-in replacement for substrate-api-sidecar.",
+        description = "REST API for Enjin and Canary Relaychain and Matrixchain. Forked from Parity Technologies' Polkadot REST API.",
         license(name = "GPL-3.0-or-later"),
-        contact(url = "https://github.com/paritytech/polkadot-rest-api")
+        contact(url = "https://github.com/enjin/blockchain-rest-api")
     ),
     servers(
-        (url = "http://localhost:8080/v1", description = "Localhost")
+        (url = "http://localhost:8080", description = "Localhost")
     ),
     tags(
         (name = "health", description = "Health check"),
@@ -24,9 +24,7 @@ use utoipa::OpenApi;
         (name = "pallets", description = "Runtime pallet metadata, storage, constants, events, errors"),
         (name = "runtime", description = "Runtime specification, metadata, and code"),
         (name = "transaction", description = "Transaction submission, fee estimation, and construction material"),
-        (name = "coretime", description = "Coretime system information"),
         (name = "paras", description = "Parachain inclusion data"),
-        (name = "ahm", description = "Asset Hub Migration information"),
         (name = "capabilities", description = "API capabilities and chain pallets"),
         (name = "rc", description = "Relay chain endpoints (available on parachains only)"),
     ),
@@ -35,7 +33,6 @@ use utoipa::OpenApi;
         crate::handlers::health::get_health::get_health,
         crate::handlers::version::get_version::get_version,
         crate::handlers::capabilities::get_capabilities,
-        crate::handlers::ahm::get_ahm_info::ahm_info,
         // Node
         crate::handlers::node::get_node_version::get_node_version,
         crate::handlers::node::get_node_network::get_node_network,
@@ -51,10 +48,6 @@ use utoipa::OpenApi;
         crate::handlers::blocks::get_block_para_inclusions::get_block_para_inclusions,
         // Accounts
         crate::handlers::accounts::get_balance_info::get_balance_info,
-        crate::handlers::accounts::get_asset_balances::get_asset_balances,
-        crate::handlers::accounts::get_asset_approvals::get_asset_approvals,
-        crate::handlers::accounts::get_pool_asset_balances::get_pool_asset_balances,
-        crate::handlers::accounts::get_pool_asset_approvals::get_pool_asset_approvals,
         crate::handlers::accounts::get_staking_info::get_staking_info,
         crate::handlers::accounts::get_staking_payouts::get_staking_payouts,
         crate::handlers::accounts::get_vesting_info::get_vesting_info,
@@ -62,7 +55,6 @@ use utoipa::OpenApi;
         crate::handlers::accounts::get_convert::get_convert,
         crate::handlers::accounts::get_validate::get_validate,
         crate::handlers::accounts::get_compare::get_compare,
-        crate::handlers::accounts::get_foreign_asset_balances::get_foreign_asset_balances,
         // Pallets
         crate::handlers::pallets::storage::get_pallets_storage,
         crate::handlers::pallets::storage::get_pallets_storage_item,
@@ -76,13 +68,6 @@ use utoipa::OpenApi;
         crate::handlers::pallets::dispatchables::get_pallet_dispatchable_item,
         crate::handlers::pallets::staking_progress::pallets_staking_progress,
         crate::handlers::pallets::staking_validators::pallets_staking_validators,
-        crate::handlers::pallets::nomination_pools::pallets_nomination_pools_info,
-        crate::handlers::pallets::nomination_pools::pallets_nomination_pools_pool,
-        crate::handlers::pallets::assets::pallets_assets_asset_info,
-        crate::handlers::pallets::pool_assets::pallets_pool_assets_asset_info,
-        crate::handlers::pallets::foreign_assets::pallets_foreign_assets,
-        crate::handlers::pallets::asset_conversion::get_liquidity_pools,
-        crate::handlers::pallets::asset_conversion::get_next_available_id,
         crate::handlers::pallets::on_going_referenda::pallets_on_going_referenda,
         // Runtime
         crate::handlers::runtime::get_spec::runtime_spec,
@@ -99,12 +84,6 @@ use utoipa::OpenApi;
         crate::handlers::transaction::metadata_blob::metadata_blob,
         crate::handlers::transaction::parse::parse,
         // Coretime
-        crate::handlers::coretime::info::coretime_info,
-        crate::handlers::coretime::overview::coretime_overview,
-        crate::handlers::coretime::leases::coretime_leases,
-        crate::handlers::coretime::regions::coretime_regions,
-        crate::handlers::coretime::renewals::coretime_renewals,
-        crate::handlers::coretime::reservations::coretime_reservations,
         // Paras
         crate::handlers::paras::paras_inclusion::get_paras_inclusion,
         // RC - Blocks
@@ -189,18 +168,16 @@ mod tests {
         result
     }
 
-    /// Build the full route registry as `create_app` would, using `ChainType::Coretime`
-    /// for maximum route coverage (includes standard, coretime-specific, parachain, and
+    /// Build the full route registry as `create_app` would, using `ChainType::Parachain`
+    /// for maximum Enjin Blockchain route coverage (includes standard, parachain, and
     /// relay-chain-proxy routes).
     fn build_full_registry() -> RouteRegistry {
         let registry = RouteRegistry::new();
-        let chain_type = ChainType::Coretime;
+        let chain_type = ChainType::Parachain;
 
         let _ = routes::accounts::accounts_routes(&registry);
-        let _ = routes::ahm::routes(&registry);
         let _ = routes::blocks::blocks_routes(&registry);
         let _ = routes::capabilities::routes(&registry);
-        let _ = routes::coretime::routes(&registry, &chain_type);
         let _ = routes::health::routes(&registry);
         let _ = routes::node::routes(&registry);
         let _ = routes::pallets::routes(&registry, &chain_type);
@@ -211,6 +188,33 @@ mod tests {
         let _ = routes::version::routes(&registry);
 
         registry
+    }
+
+    #[test]
+    fn ebc_api_does_not_expose_upstream_specialized_routes() {
+        for route in build_full_registry().routes() {
+            for removed in [
+                "/ahm/",
+                "/coretime/",
+                "asset-balances",
+                "asset-approvals",
+                "/nomination-pools/",
+                "/asset-conversion/",
+                "/pallets/assets/",
+                "/pallets/pool-assets/",
+                "/pallets/foreign-assets",
+            ] {
+                assert!(
+                    !route.path.contains(removed),
+                    "Unexpected route: {}",
+                    route.path
+                );
+            }
+        }
+        assert_eq!(
+            ApiDoc::openapi().servers.unwrap()[0].url,
+            "http://localhost:8080"
+        );
     }
 
     /// Verify that every registered route has a corresponding OpenAPI path and vice versa.

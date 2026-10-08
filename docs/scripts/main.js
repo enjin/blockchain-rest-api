@@ -1,7 +1,7 @@
 // Copyright (C) 2026 Parity Technologies (UK) Ltd.
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// Main application entry point for Polkadot REST API Documentation
+// Main application entry point for Enjin Blockchain REST API Documentation
 // Coordinates the loading, parsing, and rendering of the documentation
 
 // Import CSS files for webpack bundling
@@ -602,6 +602,7 @@ class DocApp {
         const servers = this.parser.getServers();
         
         // Populate server options
+        this.currentServer = servers[0]?.url || this.currentServer;
         serverSelect.innerHTML = '';
         servers.forEach((server, index) => {
             const option = document.createElement('option');

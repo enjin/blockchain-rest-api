@@ -1,0 +1,11 @@
+.git
+target
+**/node_modules
+docs/dist
+.env
+.env.*
+!.env.sample
+**/*.log
+metrics/grafana/data
+results
+data

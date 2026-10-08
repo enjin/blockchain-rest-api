@@ -1,4 +1,5 @@
 [package]
+publish = false
 name = "polkadot-rest-api-config"
 edition.workspace = true
 authors.workspace = true

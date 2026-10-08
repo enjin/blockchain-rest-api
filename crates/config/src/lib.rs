@@ -219,7 +219,7 @@ fn default_metrics_prom_port() -> u16 {
 }
 
 fn default_metrics_prometheus_prefix() -> String {
-    "polkadot_rest_api".to_string()
+    "enjin_rest_api".to_string()
 }
 
 fn default_metrics_loki_host() -> String {

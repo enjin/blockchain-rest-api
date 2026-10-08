@@ -57,15 +57,10 @@ pub fn create_app(state: AppState) -> Router {
         ));
 
     // Create v1 API router with route registration
-    // All routes are mounted unconditionally - runtime metadata validation happens in handlers
+    // Generic Enjin Blockchain routes are mounted here; handlers validate runtime pallet availability.
     let v1_routes = Router::new()
         .route("/", get(routes::root::root_handler))
-        .merge(routes::ahm::routes(registry))
         .merge(routes::capabilities::routes(registry))
-        .merge(routes::coretime::routes(
-            registry,
-            &state.chain_info.chain_type,
-        ))
         .merge(routes::health::routes(registry))
         .merge(routes::node::routes(registry))
         .merge(routes::paras::routes(

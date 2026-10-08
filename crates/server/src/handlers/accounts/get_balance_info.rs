@@ -204,3 +204,63 @@ async fn handle_use_rc_block(
 
     Ok(Json(results).into_response())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::handlers::common::accounts::{
+        DecodedAccountData, DecodedBalanceLock, calculate_transferable,
+        get_default_existential_deposit, get_default_token_decimals, get_default_token_symbol,
+    };
+
+    #[test]
+    fn enjin_chain_balances_preserve_base_units_and_denominate_all_fields() {
+        let unit = 1_000_000_000_000_000_000u128;
+        for (spec_name, symbol) in [
+            ("enjin", "ENJ"),
+            ("canary", "cENJ"),
+            ("matrix-enjin", "ENJ"),
+            ("matrix", "cENJ"),
+        ] {
+            let account_data = DecodedAccountData {
+                nonce: 7,
+                free: 10 * unit,
+                reserved: unit,
+                frozen: Some(3 * unit),
+                misc_frozen: None,
+                fee_frozen: None,
+            };
+            let raw = RawBalanceInfo {
+                block: utils::ResolvedBlock {
+                    hash: "0x1234".into(),
+                    number: 100,
+                },
+                token_symbol: get_default_token_symbol(spec_name),
+                token_decimals: get_default_token_decimals(spec_name),
+                transferable: calculate_transferable(
+                    get_default_existential_deposit(spec_name),
+                    &account_data,
+                ),
+                account_data,
+                locks: vec![DecodedBalanceLock {
+                    id: "staking ".into(),
+                    amount: 3 * unit,
+                    reasons: "All".into(),
+                }],
+            };
+            let base = format_response(&raw, false, None, None, None);
+            assert_eq!(base.token_symbol, symbol);
+            assert_eq!(base.nonce, "7");
+            assert_eq!(base.free, (10 * unit).to_string());
+            assert_eq!(base.reserved, unit.to_string());
+            assert_eq!(base.transferable, (8 * unit).to_string());
+            let denominated =
+                serde_json::to_value(format_response(&raw, true, None, None, None)).unwrap();
+            assert_eq!(denominated["free"], "10.000000000000000000");
+            assert_eq!(denominated["reserved"], "1.000000000000000000");
+            assert_eq!(denominated["frozen"], "3.000000000000000000");
+            assert_eq!(denominated["transferable"], "8.000000000000000000");
+            assert_eq!(denominated["locks"][0]["amount"], "3.000000000000000000");
+        }
+    }
+}
