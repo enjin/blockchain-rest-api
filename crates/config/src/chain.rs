@@ -224,6 +224,62 @@ mod tests {
     use super::*;
 
     #[test]
+    fn enjin_relay_configs_match_runtime_classification() {
+        let configs = ChainConfigs::default();
+        for name in ["enjin", "canary"] {
+            let config = configs.get(name).expect("relay config");
+            let chain_type = ChainType::from_spec_name(&name.to_uppercase());
+            assert_eq!(chain_type, ChainType::Relay);
+            assert_eq!(config.chain_type, chain_type);
+            assert_eq!(chain_type.as_relay_chain(name).unwrap().spec_name(), name);
+            assert!(config.finalizes);
+            assert_eq!(config.block_number_bytes, 4);
+            assert_eq!(config.hasher, Hasher::Blake2_256);
+            // Enjin uses portable metadata, not Polkadot's pre-V14 type definitions.
+            assert_eq!(config.legacy_types, "none");
+            assert!(config.relay_chain.is_none());
+            assert!(config.para_id.is_none());
+            // Preserve the fee threshold from the Enjin Sidecar configuration.
+            assert!(!config.supports_fee_calculation(99));
+            assert!(config.supports_fee_calculation(100));
+            // Detect RPC availability rather than importing Polkadot's version thresholds.
+            assert_eq!(
+                config.query_fee_details_status(100),
+                QueryFeeDetailsStatus::Unknown
+            );
+        }
+    }
+
+    #[test]
+    fn matrixchains_resolve_to_their_own_relay_without_asset_hub_behavior() {
+        let configs = ChainConfigs::default();
+        for (name, relay) in [("matrix-enjin", "enjin"), ("matrix", "canary")] {
+            let config = configs.get(&name.to_uppercase()).expect("matrix config");
+            assert_eq!(config.chain_type, ChainType::Parachain);
+            assert_eq!(ChainType::from_spec_name(name), config.chain_type);
+            assert_eq!(config.relay_chain.as_deref(), Some(relay));
+            assert_eq!(config.para_id, Some(1000));
+            assert_eq!(config.block_number_bytes, 4);
+            assert_eq!(config.hasher, Hasher::Blake2_256);
+            assert_eq!(config.legacy_types, "none");
+            assert!(config.finalizes);
+            // Matrixchain does not inherit Relaychain's Sidecar fee threshold.
+            assert!(config.supports_fee_calculation(0));
+            assert_eq!(
+                config.query_fee_details_status(0),
+                QueryFeeDetailsStatus::Unknown
+            );
+            let relay_config = configs.get(config.relay_chain.as_deref().unwrap()).unwrap();
+            assert_eq!(relay_config.chain_type, ChainType::Relay);
+            let standalone = crate::Config::single_chain(config.clone());
+            assert!(!standalone.has_relay_chain());
+            let paired = crate::Config::with_relay_chain(config.clone(), relay_config.clone());
+            assert!(paired.has_relay_chain());
+            assert_eq!(paired.rc.unwrap().chain_type, ChainType::Relay);
+        }
+    }
+
+    #[test]
     fn test_hasher_from_str() {
         assert_eq!("blake2-256".parse::<Hasher>().unwrap(), Hasher::Blake2_256);
         assert_eq!("Blake2_256".parse::<Hasher>().unwrap(), Hasher::Blake2_256);

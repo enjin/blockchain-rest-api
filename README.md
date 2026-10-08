@@ -2,6 +2,82 @@
 
 A REST service for interacting with Polkadot SDK-based blockchain nodes, rewritten from the ground up in Rust.
 
+## Enjin and Canary support
+
+This fork adds core Relaychain and Matrixchain support for the following runtime spec names:
+
+| Network | Spec name | Native token | Decimals | SS58 prefix |
+|---------|-----------|--------------|----------|-------------|
+| Enjin Relaychain | `enjin` | ENJ | 18 | 2135 |
+| Canary Relaychain | `canary` | cENJ | 18 | 69 |
+| Enjin Matrixchain | `matrix-enjin` | ENJ | 18 | 1110 |
+| Canary Matrixchain | `matrix` | cENJ | 18 | 9030 |
+
+Run one API instance per chain, pointing `SAS_SUBSTRATE_URL` at that
+chain's RPC node. The runtime spec name selects the configuration automatically.
+Balances, blocks and transactions on the primary chain need only that connection.
+
+```bash
+# Replace with your Relaychain or Matrixchain RPC URL.
+export SAS_SUBSTRATE_URL=ws://127.0.0.1:9944
+export SAS_EXPRESS_PORT=8080
+cargo run --release --bin polkadot-rest-api
+```
+
+For Matrixchain, optionally add its matching relaychain to enable the existing
+`/v1/rc/...` endpoints and parachain inclusion queries:
+
+```bash
+# Example: Matrixchain RPC on port 9944, its relaychain RPC on port 9945.
+export SAS_SUBSTRATE_URL=ws://127.0.0.1:9944
+export SAS_SUBSTRATE_MULTI_CHAIN_URL='[{"url":"ws://127.0.0.1:9945","type":"relay"}]'
+export SAS_EXPRESS_PORT=8080
+cargo run --release --bin polkadot-rest-api
+```
+
+Pair `matrix-enjin` with `enjin`, and `matrix` with `canary`. Both Matrixchains
+use parachain ID 1000. Without a relay URL, primary-chain queries still work and
+relay queries report that a relay connection is not configured. If a relay URL
+is supplied, startup waits for that connection and fails if it cannot connect.
+When switching back to a standalone instance, unset `SAS_SUBSTRATE_MULTI_CHAIN_URL`.
+
+Matrixchains are classified as parachains. The Asset Hub-specific `useRcBlock`
+parameter and Asset Hub migration endpoints are not supported; query Matrixchain
+with its own block numbers/hashes and use `/v1/rc/...` for relaychain data.
+
+The initial scope is native account balances and nonces, blocks and their decoded
+extrinsics/events, runtime metadata, generic pallet storage, and the existing
+transaction parsing, material, fee-estimation and submission endpoints. Balances
+are returned in base units by default; `denominated=true` uses 18 decimals.
+The existential deposit is read from the queried block's runtime metadata, with
+0.1 ENJ/cENJ as the fallback. Address formatting prefers the node's `ss58Format`
+property and falls back to the prefixes above.
+
+Examples for the next live-network testing pass (all API paths start with `/v1`):
+
+- `GET /v1/node/version` and `GET /v1/runtime/spec`
+- `GET /v1/accounts/{accountId}/balance-info`
+- `GET /v1/accounts/{accountId}/balance-info?denominated=true`
+- `GET /v1/accounts/{accountId}/balance-info?at={blockHeight}`
+- `GET /v1/blocks/head` and `GET /v1/blocks/{blockHeight}`
+- `GET /v1/blocks/{blockHeight}/extrinsics/{extrinsicIndex}`
+- `POST /v1/transaction/parse` and `POST /v1/transaction/fee-estimate`
+
+Historical queries require a node retaining the requested block/state. Verify
+funded and empty accounts, locked/reserved funds, transfers, batches, failed
+extrinsics, and blocks around runtime upgrades against the existing Sidecar.
+On Matrixchain, also check the optional relay connection and keep Matrixchain
+and relaychain block heights distinct.
+Events after the final extrinsic use upstream's `afterExtrinsics` field, rather
+than the placeholder extrinsics used by the Enjin Sidecar workaround.
+
+Live-network compatibility testing is a separate follow-up. This phase does not
+adapt nomination pools or add Multi-Tokens, Fuel Tanks or collator-staking APIs.
+Existing specialised upstream endpoints are not a guarantee
+of compatibility with Enjin's custom pallets. Transaction access is by block and
+extrinsic index; account transaction history and transaction-hash lookup require
+an indexer.
+
 ## Public Instances
 
 Parity hosts public instances of the Polkadot REST API for the following chains:

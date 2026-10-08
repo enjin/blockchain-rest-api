@@ -95,5 +95,45 @@
     "relayChain": "westend",
     "paraId": 1000,
     "specVersions": null
+  },
+  "enjin": {
+    "finalizes": true,
+    "minCalcFeeRuntime": 100,
+    "blockNumberBytes": 4,
+    "hasher": "blake2-256",
+    "legacyTypes": "none",
+    "chainType": "relay",
+    "specVersions": null
+  },
+  "canary": {
+    "finalizes": true,
+    "minCalcFeeRuntime": 100,
+    "blockNumberBytes": 4,
+    "hasher": "blake2-256",
+    "legacyTypes": "none",
+    "chainType": "relay",
+    "specVersions": null
+  },
+  "matrix-enjin": {
+    "finalizes": true,
+    "minCalcFeeRuntime": 0,
+    "blockNumberBytes": 4,
+    "hasher": "blake2-256",
+    "legacyTypes": "none",
+    "chainType": "parachain",
+    "relayChain": "enjin",
+    "paraId": 1000,
+    "specVersions": null
+  },
+  "matrix": {
+    "finalizes": true,
+    "minCalcFeeRuntime": 0,
+    "blockNumberBytes": 4,
+    "hasher": "blake2-256",
+    "legacyTypes": "none",
+    "chainType": "parachain",
+    "relayChain": "canary",
+    "paraId": 1000,
+    "specVersions": null
   }
 }

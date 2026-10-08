@@ -493,6 +493,8 @@ fn get_ss58_prefix(chain_type: &ChainType, spec_name: &str) -> u16 {
                 Some(KnownRelayChain::Westend) => 42,
                 Some(KnownRelayChain::Rococo) => 42,
                 Some(KnownRelayChain::Paseo) => 42,
+                Some(KnownRelayChain::Enjin) => 2135,
+                Some(KnownRelayChain::Canary) => 69,
                 None => 42, // Default to generic substrate
             }
         }
@@ -516,7 +518,11 @@ fn get_ss58_prefix(chain_type: &ChainType, spec_name: &str) -> u16 {
                 42 // Default to generic substrate
             }
         }
-        ChainType::Parachain => 42, // Generic substrate for unknown parachains
+        ChainType::Parachain => match spec_name.to_lowercase().as_str() {
+            "matrix-enjin" => 1110,
+            "matrix" => 9030,
+            _ => 42, // Generic substrate for unknown parachains
+        },
     }
 }
 
@@ -653,6 +659,86 @@ async fn connect_with_progress_logging_impl(
                     prefix, url, elapsed_secs, status
                 );
                 let _ = std::io::stderr().flush();
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::routes;
+    use subxt_rpcs::client::mock_rpc_client::{Json as MockJson, MockRpcClient};
+
+    #[tokio::test]
+    async fn enjin_chain_identity_drives_routes_and_address_format() {
+        for (spec_name, default_prefix, expected_type) in [
+            ("enjin", 2135, ChainType::Relay),
+            ("canary", 69, ChainType::Relay),
+            ("matrix-enjin", 1110, ChainType::Parachain),
+            ("matrix", 9030, ChainType::Parachain),
+        ] {
+            // Check native prefixes, missing properties, and a node-provided override.
+            for prefix in [Some(default_prefix), None, Some(42)] {
+                let mock = MockRpcClient::builder()
+                    .method_handler("state_getRuntimeVersion", move |_params| async move {
+                        MockJson(serde_json::json!({
+                            "specName": spec_name,
+                            "implName": spec_name,
+                            "authoringVersion": 1,
+                            "specVersion": 100,
+                            "implVersion": 0,
+                            "apis": [],
+                            "transactionVersion": 1,
+                            "stateVersion": 1
+                        }))
+                    })
+                    .method_handler("system_properties", move |_params| async move {
+                        MockJson(match prefix {
+                            Some(value) => serde_json::json!({"ss58Format": value}),
+                            None => serde_json::json!({}),
+                        })
+                    })
+                    .build();
+                let rpc = SubstrateLegacyRpc::new(RpcClient::new(mock));
+                let info = get_chain_info(&rpc).await.unwrap();
+                assert_eq!(info.spec_name, spec_name);
+                assert_eq!(info.chain_type, expected_type);
+                assert_eq!(info.ss58_prefix, prefix.unwrap_or(default_prefix));
+                let registry = RouteRegistry::new();
+                let _ = routes::accounts::accounts_routes(&registry);
+                let _ = routes::blocks::blocks_routes(&registry);
+                let _ = routes::transaction::routes(&registry, &info.chain_type);
+                let _ = routes::pallets::routes(&registry, &info.chain_type);
+                let _ = routes::paras::routes(&registry, &info.chain_type);
+                let _ = routes::rc::routes(&registry, &info.chain_type);
+                let registered = registry.routes();
+                for path in [
+                    "/v1/accounts/{accountId}/balance-info",
+                    "/v1/blocks/{blockId}",
+                    "/v1/blocks/{blockId}/extrinsics/{extrinsicIndex}",
+                    "/v1/transaction",
+                    "/v1/transaction/fee-estimate",
+                ] {
+                    assert!(registered.iter().any(|route| route.path == path), "{path}");
+                }
+                if expected_type == ChainType::Relay {
+                    assert!(
+                        !registered
+                            .iter()
+                            .any(|route| route.path.starts_with("/v1/rc/")
+                                || route.path.starts_with("/v1/paras/"))
+                    );
+                } else {
+                    for path in [
+                        "/v1/rc/accounts/{accountId}/balance-info",
+                        "/v1/rc/blocks/{blockId}",
+                        "/v1/rc/transaction/fee-estimate",
+                        "/v1/paras/{number}/inclusion",
+                    ] {
+                        assert!(registered.iter().any(|route| route.path == path), "{path}");
+                    }
+                }
             }
         }
     }

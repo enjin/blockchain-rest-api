@@ -22,3 +22,6 @@ data/
 # Server runtime artifacts (scripts/start-server-with-fallback.sh, CI)
 *server.log
 *.pid
+
+# IDEs
+.idea

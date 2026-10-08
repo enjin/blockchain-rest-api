@@ -31,6 +31,8 @@ pub enum KnownRelayChain {
     Westend,
     Rococo,
     Paseo,
+    Enjin,
+    Canary,
 }
 
 impl KnownRelayChain {
@@ -42,6 +44,8 @@ impl KnownRelayChain {
             Self::Westend => "westend",
             Self::Rococo => "rococo",
             Self::Paseo => "paseo",
+            Self::Enjin => "enjin",
+            Self::Canary => "canary",
         }
     }
 
@@ -53,6 +57,8 @@ impl KnownRelayChain {
             "westend" => Some(Self::Westend),
             "rococo" => Some(Self::Rococo),
             "paseo" => Some(Self::Paseo),
+            "enjin" => Some(Self::Enjin),
+            "canary" => Some(Self::Canary),
             _ => None,
         }
     }
