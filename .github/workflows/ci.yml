@@ -1,360 +1,67 @@
 name: CI
-
 on:
   push:
-    branches: [ main, master ]
   pull_request:
-    branches: [ main, master ]
-
+  workflow_dispatch:
+permissions:
+  contents: read
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
-
 env:
   CARGO_TERM_COLOR: always
-
-# Least privilege: every CI job only needs to read the repository.
-permissions:
-  contents: read
-
 jobs:
-  fmt:
-    name: Format Check
+  checks:
+    name: Rust and docs checks
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # master
+      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067
         with:
-          toolchain: nightly-2026-06-16
-          components: rustfmt
-
-      - name: Check formatting
+          toolchain: 1.94.0
+          components: rustfmt, clippy
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: docs/package-lock.json
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-rust-1.94.0-${{ hashFiles('Cargo.lock') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-rust-1.94.0-${{ hashFiles('Cargo.lock') }}-
+      - name: Formatting
         run: cargo fmt --all -- --check
-
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # master
-        with:
-          toolchain: nightly-2026-06-16
-
-      - name: Cache cargo registry
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-registry-
-
-      - name: Cache cargo index
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-index-
-
-      - name: Cache target directory
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: target
-          key: ${{ runner.os }}-target-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-target-
-
-      - name: Build workspace
-        run: cargo build --workspace --all-features
-
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # master
-        with:
-          toolchain: nightly-2026-06-16
-
-      - name: Cache cargo registry
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-registry-
-
-      - name: Cache cargo index
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-index-
-
-      - name: Cache target directory
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: target
-          key: ${{ runner.os }}-target-test-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-target-test-
-            ${{ runner.os }}-target-
-
-      - name: Run tests
-        run: cargo test --workspace --all-features --exclude integration_tests
-
-  integration-test:
-    name: Integration Tests
-    runs-on: ubuntu-latest
-    needs: [build]
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # master
-        with:
-          toolchain: nightly-2026-06-16
-
-      - name: Cache cargo registry
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-registry-
-
-      - name: Cache cargo index
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-index-
-
-      - name: Cache target directory
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: target
-          key: ${{ runner.os }}-target-integration-test-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-target-integration-test-
-            ${{ runner.os }}-target-
-
-      - name: Build server
-        run: cargo build --release --package polkadot-rest-api
-
-      # ========================================
-      # Polkadot Tests
-      # ========================================
-
-      - name: Start Polkadot server
-        run: ./scripts/start-server-with-fallback.sh polkadot
-
-      - name: Run basic integration tests (Polkadot)
-        run: cargo test --package integration_tests --test basic
-        env:
-          API_URL: http://localhost:8080
-          RUST_LOG: info
-        timeout-minutes: 10
-
-      - name: Run latest integration tests (Polkadot)
-        run: cargo test --package integration_tests test_latest_polkadot
-        env:
-          API_URL: http://localhost:8080
-          RUST_LOG: info
-        timeout-minutes: 20
-
-      - name: Run historical integration tests (Polkadot)
-        run: cargo test --package integration_tests test_historical_polkadot
-        env:
-          API_URL: http://localhost:8080
-          RUST_LOG: info
-          TEST_DELAY_MS: 2000
-        timeout-minutes: 15
-
-      - name: Stop Polkadot server
-        if: always()
+      - name: Unit and fixture tests
+        run: cargo test --locked --workspace --all-features --exclude integration_tests
+      - name: Enjin Blockchain configuration tests
+        run: cargo test --locked -p integration_tests --test chain_config
+      - name: Clippy
+        run: cargo clippy --locked --workspace --all-features --all-targets -- -D warnings
+      - name: Check generated OpenAPI
         run: |
-          if [ -f polkadot-server.pid ]; then
-            kill $(cat polkadot-server.pid) || true
-            rm polkadot-server.pid
-          fi
-
-      # ========================================
-      # Kusama Tests
-      # ========================================
-
-      - name: Start Kusama server
-        run: ./scripts/start-server-with-fallback.sh kusama
-
-      - name: Run historical integration tests (Kusama)
-        run: cargo test --package integration_tests test_historical_kusama
-        env:
-          API_URL: http://localhost:8080
-          RUST_LOG: info
-          TEST_DELAY_MS: 2000
-        timeout-minutes: 15
-
-      - name: Stop Kusama server
-        if: always()
+          cargo run --locked --quiet -p polkadot-rest-api --example export_openapi > /tmp/openapi.json
+          diff -u docs/openapi.json /tmp/openapi.json
+      - name: Build documentation
         run: |
-          if [ -f kusama-server.pid ]; then
-            kill $(cat kusama-server.pid) || true
-            rm kusama-server.pid
-          fi
-
-      # ========================================
-      # Asset Hub Polkadot Tests
-      # ========================================
-
-      - name: Start Asset Hub Polkadot server
-        run: ./scripts/start-server-with-fallback.sh asset-hub-polkadot
-
-      - name: Run latest integration tests (Asset Hub Polkadot)
-        run: cargo test --package integration_tests test_latest_asset_hub_polkadot
-        env:
-          API_URL: http://localhost:8080
-          RUST_LOG: info
-        timeout-minutes: 20
-
-      - name: Run historical integration tests (Asset Hub Polkadot)
-        run: cargo test --package integration_tests test_historical_asset_hub_polkadot
-        env:
-          API_URL: http://localhost:8080
-          RUST_LOG: info
-          TEST_DELAY_MS: 2000
-        timeout-minutes: 15
-
-      - name: Run accounts integration tests (Asset Hub Polkadot)
-        run: cargo test --package integration_tests --test accounts
-        env:
-          API_URL: http://localhost:8080
-          RUST_LOG: info
-        timeout-minutes: 10
-
-      - name: Stop Asset Hub Polkadot server
-        if: always()
+          npm ci --prefix docs
+          npm run build --prefix docs
+      - name: Build release with embedded documentation
+        run: cargo build --locked --release -p polkadot-rest-api
+      - name: Smoke script regression tests
+        run: python3 -m unittest discover -s scripts -p 'test_*.py'
+      - name: Package binary and corresponding source
         run: |
-          if [ -f asset-hub-polkadot-server.pid ]; then
-            kill $(cat asset-hub-polkadot-server.pid) || true
-            rm asset-hub-polkadot-server.pid
-          fi
-
-      # ========================================
-      # Asset Hub Kusama Tests
-      # ========================================
-
-      - name: Start Asset Hub Kusama server
-        run: ./scripts/start-server-with-fallback.sh asset-hub-kusama
-
-      - name: Run latest integration tests (Asset Hub Kusama)
-        run: cargo test --package integration_tests test_latest_asset_hub_kusama
-        env:
-          API_URL: http://localhost:8080
-          RUST_LOG: info
-        timeout-minutes: 20
-
-      - name: Run historical integration tests (Asset Hub Kusama)
-        run: cargo test --package integration_tests test_historical_asset_hub_kusama
-        env:
-          API_URL: http://localhost:8080
-          RUST_LOG: info
-          TEST_DELAY_MS: 2000
-        timeout-minutes: 15
-
-      - name: Stop Asset Hub Kusama server
-        if: always()
-        run: |
-          if [ -f asset-hub-kusama-server.pid ]; then
-            kill $(cat asset-hub-kusama-server.pid) || true
-            rm asset-hub-kusama-server.pid
-          fi
-
-      # ========================================
-      # Upload Logs on Failure
-      # ========================================
-
-      - name: Upload Polkadot server logs
-        if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+          mkdir -p dist
+          cp target/release/enjin-rest-api LICENSE NOTICE dist/
+          git archive --format=tar.gz --prefix=blockchain-rest-api/ HEAD > dist/source.tar.gz
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: polkadot-server-logs
-          path: polkadot-server.log
-
-      - name: Upload Kusama server logs
-        if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: kusama-server-logs
-          path: kusama-server.log
-
-      - name: Upload Asset Hub Polkadot server logs
-        if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: asset-hub-polkadot-server-logs
-          path: asset-hub-polkadot-server.log
-
-      - name: Upload Asset Hub Kusama server logs
-        if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: asset-hub-kusama-server-logs
-          path: asset-hub-kusama-server.log
-
-  clippy:
-    name: Clippy
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # master
-        with:
-          toolchain: nightly-2026-06-16
-          components: clippy
-
-      - name: Cache cargo registry
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-registry-
-
-      - name: Cache cargo index
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-index-
-
-      - name: Cache target directory
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: target
-          key: ${{ runner.os }}-target-clippy-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-target-clippy-
-            ${{ runner.os }}-target-
-
-      - name: Run clippy
-        run: cargo clippy --workspace --all-features -- -D warnings
+          name: blockchain-rest-api-linux-amd64
+          path: dist/

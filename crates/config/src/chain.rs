@@ -224,6 +224,70 @@ mod tests {
     use super::*;
 
     #[test]
+    fn embedded_config_only_contains_ebc() {
+        let configs = ChainConfigs::default();
+        let mut names = configs.chain_names();
+        names.sort();
+        assert_eq!(names, vec!["canary", "enjin", "matrix", "matrix-enjin"]);
+    }
+
+    #[test]
+    fn enjin_relay_configs_match_runtime_classification() {
+        let configs = ChainConfigs::default();
+        for name in ["enjin", "canary"] {
+            let config = configs.get(name).expect("relay config");
+            let chain_type = ChainType::from_spec_name(&name.to_uppercase());
+            assert_eq!(chain_type, ChainType::Relay);
+            assert_eq!(config.chain_type, chain_type);
+            assert_eq!(chain_type.as_relay_chain(name).unwrap().spec_name(), name);
+            assert!(config.finalizes);
+            assert_eq!(config.block_number_bytes, 4);
+            assert_eq!(config.hasher, Hasher::Blake2_256);
+            // Enjin uses portable metadata, not Polkadot's pre-V14 type definitions.
+            assert_eq!(config.legacy_types, "none");
+            assert!(config.relay_chain.is_none());
+            assert!(config.para_id.is_none());
+            // Preserve the fee threshold from the Enjin Sidecar configuration.
+            assert!(!config.supports_fee_calculation(99));
+            assert!(config.supports_fee_calculation(100));
+            // Detect RPC availability rather than importing Polkadot's version thresholds.
+            assert_eq!(
+                config.query_fee_details_status(100),
+                QueryFeeDetailsStatus::Unknown
+            );
+        }
+    }
+
+    #[test]
+    fn matrixchains_resolve_to_their_own_relay_without_asset_hub_behavior() {
+        let configs = ChainConfigs::default();
+        for (name, relay) in [("matrix-enjin", "enjin"), ("matrix", "canary")] {
+            let config = configs.get(&name.to_uppercase()).expect("matrix config");
+            assert_eq!(config.chain_type, ChainType::Parachain);
+            assert_eq!(ChainType::from_spec_name(name), config.chain_type);
+            assert_eq!(config.relay_chain.as_deref(), Some(relay));
+            assert_eq!(config.para_id, Some(1000));
+            assert_eq!(config.block_number_bytes, 4);
+            assert_eq!(config.hasher, Hasher::Blake2_256);
+            assert_eq!(config.legacy_types, "none");
+            assert!(config.finalizes);
+            // Matrixchain does not inherit Relaychain's Sidecar fee threshold.
+            assert!(config.supports_fee_calculation(0));
+            assert_eq!(
+                config.query_fee_details_status(0),
+                QueryFeeDetailsStatus::Unknown
+            );
+            let relay_config = configs.get(config.relay_chain.as_deref().unwrap()).unwrap();
+            assert_eq!(relay_config.chain_type, ChainType::Relay);
+            let standalone = crate::Config::single_chain(config.clone());
+            assert!(!standalone.has_relay_chain());
+            let paired = crate::Config::with_relay_chain(config.clone(), relay_config.clone());
+            assert!(paired.has_relay_chain());
+            assert_eq!(paired.rc.unwrap().chain_type, ChainType::Relay);
+        }
+    }
+
+    #[test]
     fn test_hasher_from_str() {
         assert_eq!("blake2-256".parse::<Hasher>().unwrap(), Hasher::Blake2_256);
         assert_eq!("Blake2_256".parse::<Hasher>().unwrap(), Hasher::Blake2_256);
@@ -282,144 +346,46 @@ mod tests {
 
     #[test]
     fn test_chain_configs_from_json() {
+        // Synthetic names isolate parsing behaviour from supported-network configuration.
         let json = r#"{
-            "polkadot": {
-                "finalizes": true,
-                "minCalcFeeRuntime": 0,
-                "queryFeeDetailsUnavailableAt": 27,
-                "queryFeeDetailsAvailableAt": 28,
-                "blockNumberBytes": 4,
-                "hasher": "blake2-256",
-                "legacyTypes": "polkadot",
+            "test-relay": {
+                "finalizes": false,
+                "minCalcFeeRuntime": 10,
+                "queryFeeDetailsUnavailableAt": 20,
+                "queryFeeDetailsAvailableAt": 30,
+                "blockNumberBytes": 8,
+                "hasher": "keccak-256",
+                "legacyTypes": "test-legacy",
                 "chainType": "relay"
             },
-            "asset-hub-polkadot": {
-                "finalizes": true,
-                "minCalcFeeRuntime": 601,
-                "blockNumberBytes": 4,
-                "hasher": "blake2-256",
-                "legacyTypes": "none",
-                "chainType": "assethub",
-                "relayChain": "polkadot",
-                "paraId": 1000
+            "test-parachain": {
+                "chainType": "parachain",
+                "relayChain": "test-relay",
+                "paraId": 2000
             }
         }"#;
-
         let configs = ChainConfigs::from_json_str(json).unwrap();
-
-        let polkadot = configs.get("polkadot").unwrap();
-        assert_eq!(polkadot.min_calc_fee_runtime, 0);
-        assert_eq!(polkadot.hasher, Hasher::Blake2_256);
-        assert_eq!(polkadot.legacy_types, "polkadot");
-
-        let asset_hub = configs.get("asset-hub-polkadot").unwrap();
-        assert_eq!(asset_hub.min_calc_fee_runtime, 601);
+        let relay = configs.get("test-relay").unwrap();
+        assert!(!relay.finalizes);
+        assert_eq!(relay.min_calc_fee_runtime, 10);
+        assert_eq!(relay.query_fee_details_unavailable_at, Some(20));
+        assert_eq!(relay.query_fee_details_available_at, Some(30));
+        assert_eq!(relay.block_number_bytes, 8);
+        assert_eq!(relay.hasher, Hasher::Keccak256);
+        assert_eq!(relay.legacy_types, "test-legacy");
+        assert_eq!(relay.chain_type, ChainType::Relay);
+        let parachain = configs.get("test-parachain").unwrap();
+        assert_eq!(parachain.chain_type, ChainType::Parachain);
+        assert_eq!(parachain.relay_chain.as_deref(), Some("test-relay"));
+        assert_eq!(parachain.para_id, Some(2000));
     }
 
     #[test]
     fn test_chain_configs_case_insensitive_lookup() {
-        let json = r#"{"Polkadot": {"finalizes": true}}"#;
+        let json = r#"{"Enjin": {"finalizes": true}}"#;
         let configs = ChainConfigs::from_json_str(json).unwrap();
-
-        assert!(configs.get("Polkadot").is_some());
-        assert!(configs.get("polkadot").is_some());
-        assert!(configs.get("POLKADOT").is_some());
-    }
-
-    #[test]
-    fn test_load_embedded_config() {
-        let configs = ChainConfigs::default();
-
-        // Verify we can load some expected chains
-        assert!(configs.get("polkadot").is_some());
-        assert!(configs.get("kusama").is_some());
-        assert!(configs.get("westend").is_some());
-    }
-
-    #[test]
-    fn test_all_embedded_chains_have_required_fields() {
-        let configs = ChainConfigs::default();
-
-        // Test all expected chains exist and have valid config
-        let expected_chains = vec![
-            "polkadot",
-            "kusama",
-            "westend",
-            "statemint",
-            "statemine",
-            "westmint",
-            "asset-hub-polkadot",
-            "asset-hub-kusama",
-            "asset-hub-westend",
-        ];
-
-        for chain_name in expected_chains {
-            let config = configs
-                .get(chain_name)
-                .unwrap_or_else(|| panic!("Chain '{}' should exist in config", chain_name));
-
-            // Verify reasonable defaults
-            assert!(
-                config.block_number_bytes > 0,
-                "{}: block_number_bytes should be > 0",
-                chain_name
-            );
-            assert!(
-                config.block_number_bytes <= 8,
-                "{}: block_number_bytes should be <= 8",
-                chain_name
-            );
-        }
-    }
-
-    #[test]
-    fn test_relay_chains_config() {
-        let configs = ChainConfigs::default();
-
-        for chain in &["polkadot", "kusama", "westend"] {
-            let config = configs.get(chain).unwrap();
-            assert_eq!(
-                config.legacy_types, "polkadot",
-                "{} should use polkadot legacy types",
-                chain
-            );
-        }
-    }
-
-    #[test]
-    fn test_asset_hubs_config() {
-        let configs = ChainConfigs::default();
-
-        // Asset hubs without legacy types
-        let no_legacy = vec![
-            ("statemint", "Asset Hub Polkadot legacy"),
-            ("westmint", "Asset Hub Westend legacy"),
-            ("asset-hub-polkadot", "Asset Hub Polkadot current"),
-            ("asset-hub-westend", "Asset Hub Westend current"),
-        ];
-
-        for (chain, description) in no_legacy {
-            let config = configs.get(chain).unwrap();
-            assert_eq!(
-                config.legacy_types, "none",
-                "{} should use no legacy types",
-                description
-            );
-        }
-
-        // Kusama asset hubs use kusama-asset-hub legacy types
-        let kusama_asset_hubs = vec![
-            ("statemine", "Asset Hub Kusama legacy"),
-            ("asset-hub-kusama", "Asset Hub Kusama current"),
-        ];
-
-        for (chain, description) in kusama_asset_hubs {
-            let config = configs.get(chain).unwrap();
-            assert_eq!(
-                config.legacy_types, "kusama-asset-hub",
-                "{} should use kusama-asset-hub legacy types",
-                description
-            );
+        for name in ["Enjin", "enjin", "ENJIN"] {
+            assert!(configs.get(name).is_some());
         }
     }
 
@@ -580,11 +546,11 @@ mod tests {
     }
 
     #[test]
-    fn test_chain_configs_get_or_default() {
+    fn test_chain_configs_lookup_known_and_unknown() {
         let configs = ChainConfigs::default();
 
         // Existing chain
-        let _polkadot = configs.get("polkadot").unwrap();
+        assert!(configs.get("enjin").is_some());
 
         // Non-existing chain returns None
         assert!(configs.get("non-existent-chain").is_none());
@@ -601,7 +567,7 @@ mod tests {
     fn test_empty_json_object() {
         let empty_json = r#"{}"#;
         let configs = ChainConfigs::from_json_str(empty_json).unwrap();
-        assert!(configs.get("polkadot").is_none());
+        assert!(configs.get("enjin").is_none());
     }
 
     #[test]
@@ -642,43 +608,6 @@ mod tests {
     }
 
     #[test]
-    fn test_polkadot_specific_config() {
-        let configs = ChainConfigs::default();
-        let polkadot = configs.get("polkadot").unwrap();
-
-        assert!(polkadot.finalizes);
-        assert_eq!(polkadot.min_calc_fee_runtime, 0);
-        assert_eq!(polkadot.legacy_types, "polkadot");
-        assert_eq!(polkadot.hasher, Hasher::Blake2_256);
-    }
-
-    #[test]
-    fn test_kusama_specific_config() {
-        let configs = ChainConfigs::default();
-        let kusama = configs.get("kusama").unwrap();
-
-        assert!(kusama.finalizes);
-        assert_eq!(kusama.legacy_types, "polkadot"); // Uses polkadot legacy types
-        assert_eq!(kusama.hasher, Hasher::Blake2_256);
-    }
-
-    #[test]
-    fn test_block_number_bytes_range() {
-        let configs = ChainConfigs::default();
-
-        // All chains should have reasonable block_number_bytes (typically 4)
-        for chain in &["polkadot", "kusama", "westend", "statemint", "statemine"] {
-            let config = configs.get(chain).unwrap();
-            assert!(
-                config.block_number_bytes >= 4 && config.block_number_bytes <= 8,
-                "{} has invalid block_number_bytes: {}",
-                chain,
-                config.block_number_bytes
-            );
-        }
-    }
-
-    #[test]
     fn test_spec_versions_is_optional() {
         let json = r#"{"test": {"specVersions": null}}"#;
         let configs = ChainConfigs::from_json_str(json).unwrap();
@@ -699,75 +628,5 @@ mod tests {
         let spec_versions = config.spec_versions.as_ref().unwrap();
         assert_eq!(spec_versions.get_version_at_block(500), Some(1000));
         assert_eq!(spec_versions.get_version_at_block(1000), Some(1001));
-    }
-
-    #[test]
-    fn test_parachain_topology_fields() {
-        let configs = ChainConfigs::default();
-        let ahp = configs.get("asset-hub-polkadot").unwrap();
-        assert_eq!(ahp.chain_type, crate::substrate::ChainType::AssetHub);
-        assert_eq!(ahp.relay_chain, Some("polkadot".to_string()));
-        assert_eq!(ahp.para_id, Some(1000));
-    }
-
-    #[test]
-    fn test_relay_chain_topology_fields() {
-        let configs = ChainConfigs::default();
-        let polkadot = configs.get("polkadot").unwrap();
-        assert_eq!(polkadot.chain_type, crate::substrate::ChainType::Relay);
-        assert_eq!(polkadot.relay_chain, None);
-        assert_eq!(polkadot.para_id, None);
-    }
-
-    #[test]
-    fn test_all_embedded_chains_have_valid_hashers() {
-        let configs = ChainConfigs::default();
-        let all_chains = vec![
-            "polkadot",
-            "kusama",
-            "westend",
-            "statemint",
-            "statemine",
-            "westmint",
-            "asset-hub-polkadot",
-            "asset-hub-kusama",
-            "asset-hub-westend",
-        ];
-
-        for chain_name in all_chains {
-            let config = configs.get(chain_name).unwrap();
-            // Verify hasher is valid (should not panic)
-            let _ = format!("{}", config.hasher);
-            assert!(
-                config.hasher == Hasher::Blake2_256 || config.hasher == Hasher::Keccak256,
-                "{} has invalid hasher",
-                chain_name
-            );
-        }
-    }
-
-    #[test]
-    fn test_legacy_chain_names_exist() {
-        let configs = ChainConfigs::default();
-        assert!(configs.get("statemint").is_some(), "statemint should exist");
-        assert!(configs.get("statemine").is_some(), "statemine should exist");
-        assert!(configs.get("westmint").is_some(), "westmint should exist");
-    }
-
-    #[test]
-    fn test_new_chain_names_exist() {
-        let configs = ChainConfigs::default();
-        assert!(
-            configs.get("asset-hub-polkadot").is_some(),
-            "asset-hub-polkadot should exist"
-        );
-        assert!(
-            configs.get("asset-hub-kusama").is_some(),
-            "asset-hub-kusama should exist"
-        );
-        assert!(
-            configs.get("asset-hub-westend").is_some(),
-            "asset-hub-westend should exist"
-        );
     }
 }

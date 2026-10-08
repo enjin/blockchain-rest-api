@@ -1,0 +1,21 @@
+Enjin Blockchain REST API
+
+This project is a modified fork of Polkadot REST API by Parity Technologies:
+https://github.com/paritytech/polkadot-rest-api
+Upstream base: 283555b8e8e9cf488b11e9dbc1ba5f12344f5319 (v0.3.2).
+
+Enjin fork modifications, 2026-10-08: Enjin and Canary Relaychain/Matrixchain
+support, runtime selection and public routes for Enjin Blockchain, product branding,
+documentation, packaging, monitoring, and CI/release configuration.
+The Rust crates retain their upstream names; the executable is enjin-rest-api.
+Copyright (C) 2026 Enjin for these contributions.
+
+Original copyright and SPDX notices remain in the source files. The project
+remains licensed under GPL-3.0-or-later; see LICENSE. Third-party dependencies
+retain their own licenses and notices. No endorsement by Parity is implied.
+
+Fork source: https://github.com/enjin/blockchain-rest-api
+When distributing binaries, containers, or documentation bundles, provide
+recipients the corresponding source for that exact revision and the required
+license notices. A private repository link alone does not provide source to
+recipients who cannot access it. See RELEASE.md.

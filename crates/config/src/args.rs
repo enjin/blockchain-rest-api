@@ -4,9 +4,9 @@
 use clap::Parser;
 
 #[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
+#[command(name = "enjin-rest-api", author, version, about = "Enjin Blockchain REST API", long_about = None)]
 pub struct Args {
-    /// Path to .env file (e.g., .env.polkadot)
+    /// Path to .env file (e.g., .env.enjin)
     #[arg(short, long, default_value = ".env")]
     pub env_file: String,
 }

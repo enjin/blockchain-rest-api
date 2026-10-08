@@ -1,6 +1,6 @@
 # Benchmarks
 
-Load testing suite for the polkadot-rest-api using [wrk](https://github.com/wg/wrk).
+Load testing suite for the blockchain-rest-api using [wrk](https://github.com/wg/wrk).
 
 ## Prerequisites
 
@@ -60,7 +60,7 @@ Each benchmark run saves a JSON file to `results/` with metrics:
 ```json
 {
   "endpoint": "blocks_head",
-  "service": "polkadot-rest-api",
+  "service": "blockchain-rest-api",
   "rps": 587.05,
   "avg_latency_ms": 85.08,
   "p50_ms": 75.90,
@@ -300,7 +300,7 @@ For benchmarking with native performance (no Docker overhead on the API). proces
 ```bash
 # Terminal 1 — API (native)
 SAS_SUBSTRATE_URL=wss://rpc.polkadot.io SAS_METRICS_ENABLED=true \
-  cargo run --release --bin polkadot-rest-api
+  cargo run --release --bin enjin-rest-api
 
 # Terminal 2 — process-exporter (Linux only, exposes per-process CPU/memory on :9256)
 process-exporter -config.path metrics/process-exporter.yml
@@ -332,7 +332,7 @@ On macOS without Docker for the API, process-exporter can't see native processes
 ```bash
 # Terminal 1 — API
 SAS_SUBSTRATE_URL=wss://rpc.polkadot.io SAS_METRICS_ENABLED=true \
-  cargo run --release --bin polkadot-rest-api
+  cargo run --release --bin enjin-rest-api
 
 # Terminal 2 — Prometheus + Grafana only
 docker network create monitoring 2>/dev/null

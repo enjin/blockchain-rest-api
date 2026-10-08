@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 #
-# Start the polkadot-rest-api server with fallback RPC URLs.
+# Start the blockchain-rest-api server with fallback RPC URLs.
 # If the primary RPC is down, it will try alternative URLs.
 #
 # Usage: ./scripts/start-server-with-fallback.sh <chain>
@@ -12,7 +12,7 @@
 #   chain - One of: polkadot, kusama, asset-hub-polkadot, asset-hub-kusama, westend
 #
 # Environment variables (optional):
-#   SERVER_BINARY - Path to the server binary (default: ./target/release/polkadot-rest-api)
+#   SERVER_BINARY - Path to the server binary (default: ./target/release/enjin-rest-api)
 #   HEALTH_TIMEOUT - Seconds to wait for health check (default: 60)
 #   API_PORT - Port the server runs on (default: 8080)
 #
@@ -20,7 +20,7 @@
 set -e
 
 CHAIN=$1
-SERVER_BINARY="${SERVER_BINARY:-./target/release/polkadot-rest-api}"
+SERVER_BINARY="${SERVER_BINARY:-./target/release/enjin-rest-api}"
 HEALTH_TIMEOUT="${HEALTH_TIMEOUT:-60}"
 API_PORT="${API_PORT:-8080}"
 LOG_FILE="${CHAIN}-server.log"

@@ -257,7 +257,7 @@ rm -f /tmp/_wrk_bench_endpoints_printed
 
 # Export env vars for report.lua (used to label metrics)
 export BENCH_ENDPOINT="$BENCHMARK_NAME"
-export BENCH_SERVICE="polkadot-rest-api"
+export BENCH_SERVICE="blockchain-rest-api"
 export BENCH_SCENARIO="$SCENARIO"
 export BENCH_HARDWARE="$HARDWARE_PROFILE"
 export BENCH_THREADS="$THREADS"

@@ -1,4 +1,5 @@
 [package]
+publish = false
 name = "polkadot-rest-api"
 edition.workspace = true
 authors.workspace = true
@@ -8,7 +9,7 @@ repository.workspace = true
 description = "REST service that makes it easy to interact with blockchain nodes built using Substrate's FRAME framework."
 
 [[bin]]
-name = "polkadot-rest-api"
+name = "enjin-rest-api"
 path = "src/main.rs"
 
 [dependencies]

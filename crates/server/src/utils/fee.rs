@@ -590,68 +590,78 @@ mod tests {
         assert_eq!(result, u128::MAX);
     }
 
+    #[test]
+    fn ebc_fee_thresholds() {
+        let cache = QueryFeeDetailsCache::new();
+        for spec in ["enjin", "canary"] {
+            assert!(!cache.supports_fee_calculation(spec, 99));
+            assert!(cache.supports_fee_calculation(spec, 100));
+            assert_eq!(cache.is_available(spec, 100), None);
+        }
+        for spec in ["matrix", "matrix-enjin"] {
+            assert!(cache.supports_fee_calculation(spec, 0));
+            assert_eq!(cache.is_available(spec, 0), None);
+        }
+    }
+
     // --- QueryFeeDetailsCache tests ---
 
     #[test]
-    fn test_cache_static_lookup_polkadot() {
-        let cache = QueryFeeDetailsCache::new();
-
-        // Polkadot: queryFeeDetails unavailable at spec 27, available at spec 28
-        assert_eq!(cache.is_available("polkadot", 27), Some(false));
-        assert_eq!(cache.is_available("polkadot", 28), Some(true));
-        assert_eq!(cache.is_available("polkadot", 100), Some(true));
+    fn test_cache_static_thresholds_and_precedence() {
+        // Synthetic thresholds exercise static lookup without importing another network.
+        let cache = QueryFeeDetailsCache {
+            chain_configs: ChainConfigs::from_json_str(
+                r#"{
+                "test-chain": {
+                    "minCalcFeeRuntime": 5,
+                    "queryFeeDetailsUnavailableAt": 10,
+                    "queryFeeDetailsAvailableAt": 20
+                }
+            }"#,
+            )
+            .unwrap(),
+            ..QueryFeeDetailsCache::new()
+        };
+        assert!(!cache.supports_fee_calculation("test-chain", 4));
+        assert!(cache.supports_fee_calculation("test-chain", 5));
+        for (version, expected) in [
+            (9, Some(false)),
+            (10, Some(false)),
+            (15, None),
+            (20, Some(true)),
+            (21, Some(true)),
+        ] {
+            assert_eq!(cache.is_available("test-chain", version), expected);
+        }
+        // Static knowledge takes precedence over a conflicting runtime cache entry.
+        cache.set_available(10, true);
+        cache.set_available(20, false);
+        assert_eq!(cache.is_available("test-chain", 10), Some(false));
+        assert_eq!(cache.is_available("test-chain", 20), Some(true));
+        // The gap between static thresholds falls back to the runtime cache.
+        cache.set_available(15, true);
+        assert_eq!(cache.is_available("test-chain", 15), Some(true));
     }
 
     #[test]
-    fn test_cache_static_lookup_kusama() {
-        let cache = QueryFeeDetailsCache::new();
-
-        // Kusama: queryFeeDetails unavailable at spec 2027, available at spec 2028
-        assert_eq!(cache.is_available("kusama", 2027), Some(false));
-        assert_eq!(cache.is_available("kusama", 2028), Some(true));
+    fn test_ebc_runtime_cache() {
+        for spec in ["enjin", "canary", "matrix-enjin", "matrix"] {
+            let cache = QueryFeeDetailsCache::new();
+            assert_eq!(cache.is_available(spec, 1000), None);
+            cache.set_available(1000, true);
+            assert_eq!(cache.is_available(spec, 1000), Some(true));
+            assert_eq!(cache.is_available(spec, 1001), None);
+            cache.set_available(1000, false);
+            assert_eq!(cache.is_available(spec, 1000), Some(false));
+        }
     }
 
     #[test]
-    fn test_cache_static_lookup_asset_hub() {
+    fn test_unknown_chain_cache_fallback() {
         let cache = QueryFeeDetailsCache::new();
-
-        // Asset hub chains have unknown queryFeeDetails status (null in config)
-        assert_eq!(cache.is_available("statemint", 1000), None);
-        assert_eq!(cache.is_available("statemine", 1000), None);
-    }
-
-    #[test]
-    fn test_cache_runtime_cache() {
-        let cache = QueryFeeDetailsCache::new();
-
-        // Unknown chain should return None
         assert_eq!(cache.is_available("unknown-chain", 100), None);
-
-        // Set availability in cache
         cache.set_available(100, true);
-
-        // After setting the runtime cache, is_available should return the cached value
         assert_eq!(cache.is_available("unknown-chain", 100), Some(true));
-
-        // For asset-hub (which has null in config), the runtime cache should work
-        cache.set_available(1000, false);
-        assert_eq!(cache.is_available("statemint", 1000), Some(false));
-        assert_eq!(cache.is_available("statemine", 1000), Some(false));
-    }
-
-    #[test]
-    fn test_supports_fee_calculation() {
-        let cache = QueryFeeDetailsCache::new();
-
-        // Polkadot supports fee calculation from spec 0
-        assert!(cache.supports_fee_calculation("polkadot", 0));
-        assert!(cache.supports_fee_calculation("polkadot", 100));
-
-        // Kusama supports from spec 1058
-        assert!(!cache.supports_fee_calculation("kusama", 1057));
-        assert!(cache.supports_fee_calculation("kusama", 1058));
-
-        // Unknown chains default to supported
         assert!(cache.supports_fee_calculation("unknown-chain", 1));
     }
 

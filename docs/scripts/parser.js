@@ -1,7 +1,7 @@
 // Copyright (C) 2026 Parity Technologies (UK) Ltd.
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// OpenAPI JSON Parser for Polkadot REST API Documentation
+// OpenAPI JSON Parser for Enjin Blockchain REST API Documentation
 // Handles parsing, processing, and structuring of the OpenAPI specification
 
 // Import the OpenAPI JSON spec at build time (bundled by webpack)
@@ -334,7 +334,12 @@ export class OpenAPIParser {
      * Get server information
      */
     getServers() {
-        return this.spec?.servers || [];
+        const servers = this.spec?.servers || [];
+        // Embedded docs use their own API origin, including a custom local port.
+        if (window.location.pathname.startsWith('/docs')) {
+            return [{ url: window.location.origin, description: 'This API instance' }];
+        }
+        return servers;
     }
 
     /**

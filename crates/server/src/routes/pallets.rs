@@ -85,27 +85,6 @@ pub fn routes(registry: &RouteRegistry, chain_type: &ChainType) -> Router<AppSta
         .route_registered(
             registry,
             API_VERSION,
-            "/pallets/assets/:assetId/asset-info",
-            "get",
-            get(pallets::pallets_assets_asset_info),
-        )
-        .route_registered(
-            registry,
-            API_VERSION,
-            "/pallets/pool-assets/:assetId/asset-info",
-            "get",
-            get(pallets::pallets_pool_assets_asset_info),
-        )
-        .route_registered(
-            registry,
-            API_VERSION,
-            "/pallets/foreign-assets",
-            "get",
-            get(pallets::pallets_foreign_assets),
-        )
-        .route_registered(
-            registry,
-            API_VERSION,
             "/pallets/staking/progress",
             "get",
             get(pallets::pallets_staking_progress),
@@ -116,34 +95,6 @@ pub fn routes(registry: &RouteRegistry, chain_type: &ChainType) -> Router<AppSta
             "/pallets/staking/validators",
             "get",
             get(pallets::pallets_staking_validators),
-        )
-        .route_registered(
-            registry,
-            API_VERSION,
-            "/pallets/nomination-pools/info",
-            "get",
-            get(pallets::pallets_nomination_pools_info),
-        )
-        .route_registered(
-            registry,
-            API_VERSION,
-            "/pallets/nomination-pools/:poolId",
-            "get",
-            get(pallets::pallets_nomination_pools_pool),
-        )
-        .route_registered(
-            registry,
-            API_VERSION,
-            "/pallets/asset-conversion/liquidity-pools",
-            "get",
-            get(pallets::get_liquidity_pools),
-        )
-        .route_registered(
-            registry,
-            API_VERSION,
-            "/pallets/asset-conversion/next-available-id",
-            "get",
-            get(pallets::get_next_available_id),
         )
         .route_registered(
             registry,

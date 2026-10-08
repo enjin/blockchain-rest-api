@@ -80,7 +80,7 @@ pub struct LoggingConfig<'a> {
 /// # Loki Integration
 /// When a Loki URL is provided, logs are sent asynchronously to the Loki server
 /// with the following default labels:
-/// - `service`: "polkadot-rest-api"
+/// - `service`: "enjin-rest-api"
 /// - `pid`: Current process ID
 ///
 /// # Log Rotation
@@ -133,7 +133,7 @@ pub fn init_with_config(config: LoggingConfig) -> Result<(), LoggingError> {
 
         // Create Loki layer with default labels
         let (loki_layer, task) = tracing_loki::builder()
-            .label("service", "polkadot-rest-api")?
+            .label("service", "enjin-rest-api")?
             .extra_field("pid", format!("{}", std::process::id()))?
             .build_url(parsed_url)?;
 

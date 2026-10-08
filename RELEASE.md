@@ -1,219 +1,61 @@
-# Release Process
+# Releasing Enjin Blockchain REST API
 
-Steps to prepare a new release of `polkadot-rest-api`.
+This is an Enjin-maintained GPL-3.0-or-later fork of Parity Technologies'
+Polkadot REST API. Keep LICENSE, original copyright/SPDX notices, NOTICE and
+third-party notices in every distribution. Record material modifications and
+their date in NOTICE. Historical CHANGELOG entries describe upstream releases.
 
-## Before you start
+## Prepare a fork release
 
-Four pins are maintained by hand — Dependabot doesn't bump them. Check each; if stale, bump it in
-its **own PR before the release**.
+1. Choose an Enjin release version; the current 0.3.2 is inherited from upstream.
+2. Update the workspace version in Cargo.toml, local dependency versions in the
+   server/integration-test manifests, and the OpenAPI version annotation. Update
+   the Dockerfile's fallback VERSION. Refresh Cargo.lock and regenerate the spec.
+3. Update the changelog with an explicitly identified Enjin release entry.
+4. Run the checks from README.md, regenerate and build documentation, and test
+   all four networks locally with `scripts/smoke-ebc.py`. Complete the
+   funded-account and signed-transaction acceptance checks before release.
+5. Confirm Docker Hub publishing is configured, then tag the reviewed commit
+   `vX.Y.Z` (or a semver prerelease). Existing organization tag rules apply.
 
-**1. CI nightly toolchain** (`ci.yml`) — a newer nightly can add clippy lints.
-```bash
-grep -n "toolchain: nightly-" .github/workflows/ci.yml   # pinned
-rustup check                                             # latest
-```
-If stale, bump the date and verify: `cargo +nightly-YYYY-MM-DD fmt --all -- --check` and `... clippy --workspace --all-features -- -D warnings`. Example: [#359](https://github.com/paritytech/polkadot-rest-api/pull/359).
-
-**2. `dtolnay/rust-toolchain` action** (`ci.yml`, `# master`) — no release tag, so Dependabot skips it.
-```bash
-pinned=$(grep -m1 -oE 'rust-toolchain@[0-9a-f]{40}' .github/workflows/ci.yml | cut -d@ -f2)
-git ls-remote https://github.com/dtolnay/rust-toolchain master | grep -q "$pinned" && echo "UP TO DATE" || echo "BEHIND"
-```
-If `BEHIND`, replace the SHA in **all** `ci.yml` occurrences (keep `# master`).
-
-**3. `ubuntu:22.04` container digest** (`benchmark.yml`) — a container image, not an action.
-```bash
-grep -n "ubuntu:22.04@sha256" .github/workflows/benchmark.yml    # pinned
-docker buildx imagetools inspect ubuntu:22.04 | grep -i digest   # latest (needs Docker)
-```
-If different, update the `@sha256:...` in `benchmark.yml`.
-
-**4. Build Rust version** (`Dockerfile`, `rust:X.Y.Z-...`) — no `docker` Dependabot ecosystem set up.
-```bash
-grep -n "FROM.*rust:" Dockerfile   # pinned build Rust
-rustup check                       # latest stable
-```
-If behind, bump the version in the `Dockerfile` `FROM` line.
-
-## 1. Bump workspace version
-
-Update the `version` field in the root `Cargo.toml`:
-
-```toml
-# Cargo.toml
-[workspace.package]
-version = "0.X.X"
+```sh
+npm ci --prefix docs
+npm run update-spec --prefix docs
+npm run build --prefix docs
+cargo build --locked --release -p polkadot-rest-api
 ```
 
-## 2. Update `polkadot-rest-api-config` dependency version
+## Artifacts and publishing
 
-Update the `polkadot-rest-api-config` version in both crates that depend on it:
+On default-branch pushes and `v*` tags, the container workflow automatically publishes
+`docker.io/enjin/blockchain-rest-api` for linux/amd64 and linux/arm64. Stable
+numeric version tags also update `latest`; prereleases do not. Default-branch
+builds use dev-SHA and timestamp tags. Record the image digest for deployment.
+No Parity hosting or Kargo pipeline is used.
 
-- `crates/server/Cargo.toml`
-- `crates/integration_tests/Cargo.toml`
+Containers include the executable, license/notices and a source archive under
+`/usr/share/doc/blockchain-rest-api/source.tar.gz`. The archive includes Rust,
+configuration, documentation sources, lockfiles, build script and Dockerfile.
+The docs bundle separately includes `source.tar.gz`, `license.txt`,
+`attribution.txt` and generated third-party JS license notices.
 
-```toml
-polkadot-rest-api-config = { path = "../config", version = "0.X.X" }
-```
+CI uploads the Linux binary, LICENSE, NOTICE and a source archive from the same
+Git commit. It does not automatically create a GitHub Release or publish crates.
+For a release, attach the binary and its matching source archive, license and
+notices together. Build any additional OS/architecture binaries separately and
+label them accurately. Both Rust packages have `publish = false` until an Enjin
+crates.io publishing policy and namespace are established.
 
-Then run `cargo check` to update `Cargo.lock`.
+## Corresponding source
 
-## 3. Update the changelog
+Provide recipients the corresponding source for the exact binaries, containers
+or JavaScript bundles you distribute, including modifications, dependency
+lockfiles and scripts needed to build them. A link to a private repository is
+not sufficient for recipients without access. The included source archives
+provide a practical delivery path; verify them before distributing artifacts.
+Never substitute a newer default-branch checkout for the release source.
 
-Add a new entry to `CHANGELOG.md` for the release version, following the existing format (Features, Fixes, Performance, Refactors, CI, Other).
-
-## 4. Update docs
-
-### Version strings
-
-Update the hardcoded version in these files:
-
-1. **`crates/server/src/openapi.rs`**: update the `version` in the `#[openapi]` attribute.
-2. **`docs/index.html`**: update the version in three places: `#api-version`, `#version-display`, and `#version-display-gs`.
-
-### Regenerate the OpenAPI spec and rebuild
-
-The `openapi.json` is generated dynamically by the API from utoipa annotations on handlers, so you need a running server to fetch it:
-
-```bash
-# 1. Start the API server locally
-SAS_SUBSTRATE_URL=wss://rpc.polkadot.io cargo run --release --bin polkadot-rest-api
-
-# 2. In another terminal, fetch the latest spec
-cd docs
-yarn update-spec   # Runs: curl -s http://localhost:8080/api-docs/openapi.json > openapi.json
-
-# 3. Rebuild the docs bundle with the updated spec
-yarn build         # Regenerates docs/dist/index.html and docs/dist/bundle.js
-
-# 4. Rebuild the API binary to embed the updated docs
-cd ..
-cargo build --release --package polkadot-rest-api
-```
-
-The built `dist/` folder is embedded into the API binary at compile time using `include_dir`, so the documentation is served directly by the API at `/docs/`.
-
-## 5. Create the release PR
-
-Commit all changes with the message `chore: release v0.X.X` and open a PR against `main`.
-
-```bash
-git add -A
-git commit -m "chore: release v0.X.X"
-```
-
-After the PR merges to `main`, tag the release:
-
-```bash
-git checkout main && git pull
-git tag -s v0.X.X -m "Release v0.X.X"
-git push origin v0.X.X
-```
-
-Use `-s`. Every release up to `v0.2.1` shipped a signed annotated tag and downstreams rely on it to
-build trusted binaries, but this step used to read `git tag v0.X.X`, which creates a lightweight tag
-with no tag object and therefore nothing to sign. `v0.3.0` went out that way (see #418). Check it
-before pushing:
-
-```bash
-git cat-file -t v0.X.X    # must print "tag", not "commit"
-git tag -v v0.X.X         # must verify
-```
-
-A signature on the commit is not the same thing. A squash merge is signed by GitHub's own web-flow
-key, which says nothing about who cut the release.
-
-## 6. Publish to crates.io
-
-Publish `polkadot-rest-api-config` **first**, then `polkadot-rest-api`. You must be a crate **owner** of both crates (see the [Appendix](#appendix-cratesio-onboarding) for ownership + token setup). Log in, then dry-run each package before publishing:
-
-```bash
-cargo login   # paste the token
-
-cargo publish -p polkadot-rest-api-config --dry-run
-cargo publish -p polkadot-rest-api-config
-
-cargo publish -p polkadot-rest-api --dry-run
-cargo publish -p polkadot-rest-api
-```
-
-Run these strictly in order. `polkadot-rest-api` depends on `polkadot-rest-api-config` by version, so
-its dry run fails with `failed to select a version for the requirement polkadot-rest-api-config`
-until the config crate is actually on the index. That failure is expected if you jump ahead, not a
-problem with the package.
-
-## 7. Publish the GitHub release
-
-The Docker image is already built by this point. `Build and Deploy` (`deploy.yml`) triggers on the
-`v*` tag push from step 5, not on the GitHub release, and publishes three tags:
-
-| tag | example | who uses it |
-| --- | --- | --- |
-| `vX.Y.Z` | `v0.3.0` | humans, and anyone pinning a release |
-| `latest` | | only ever points at a released version |
-| `YYYYMMDD-HHMMSS-<sha8>` | `20260917-161956-e6f087bb` | **Kargo**, see step 8 |
-
-Check all three appear at https://hub.docker.com/r/paritytech/polkadot-rest-api before continuing. If
-they are missing, the tag push did not run the workflow and step 8 has nothing to deploy.
-
-Then create the release on GitHub against the version tag, with a summary taken from the changelog
-entry. This is release notes only; nothing is triggered by it.
-
-## 8. Promote to the public instances
-
-Deployment is driven by [Kargo](https://kargo.teleport.parity.io/), not by a change in
-`devops-cloud-infra`. The image tag is written by a Kargo promotion, so there is no version pinned in
-that repo to raise a PR or an issue against. Access is via Teleport with GitHub SSO; promote rights
-come from a GitHub group named after the app, so if the UI will not let you promote, that is what to
-request (example: `paritytech/devops-cloud-infra#4218`).
-
-The Kargo project is `polkadot-rest-api-kargo`. Its Warehouse polls Docker Hub every 5 minutes and
-only matches the `YYYYMMDD-HHMMSS-<sha8>` tag from step 7. The `vX.Y.Z` tag is invisible to it, so
-identify your freight by the date stamped tag.
-
-Promote **westend first, then production**, and note the pairing is per chain rather than per
-environment:
-
-```
-westend-hub-rest-api     ->  kusama-hub-rest-api,    polkadot-hub-rest-api
-westend-relay-rest-api   ->  kusama-relay-rest-api,  polkadot-relay-rest-api
-```
-
-The westend stages take freight directly from the Warehouse. The kusama and polkadot stages cannot:
-they only accept freight that has already passed the matching westend stage, so `polkadot-relay`
-sources from `westend-relay`, never from `westend-hub`. Promoting only one westend stage leaves half
-the production instances behind on the old version.
-
-Then verify, rather than assuming the promotion landed:
-
-```bash
-for h in polkadot-hub kusama-hub westend-hub polkadot-relay kusama-relay westend-relay; do
-  printf "%-16s %s\n" "$h" "$(curl -s https://$h-rest-api.parity.io/v1/version)"
-done
-```
-
-All six should report the version you just released. A `Bad Gateway` usually means that pod is still
-restarting; retry before treating it as a failure.
-
-## 9. Final check
-
-- crates: [config](https://crates.io/crates/polkadot-rest-api-config) - [main](https://crates.io/crates/polkadot-rest-api)
-- [GitHub release](https://github.com/paritytech/polkadot-rest-api/releases)
-- [Docker tags](https://hub.docker.com/r/paritytech/polkadot-rest-api)
-- All six public instances report the new version (see the loop in step 8); any external partner
-  waiting on a fix is informed.
-
-## Appendix: crates.io onboarding
-
-`crates.io` identity is your **GitHub username**. To publish you must be an owner of **both** crates.
-
-- Ownership often comes via the `paritytech/core-devs` team; otherwise an existing owner runs `cargo owner --add <github-username>` per crate.
-- A **verified email** is required before accepting invites or publishing:
-  1. Save your email at https://crates.io/settings/profile and click the confirmation link.
-  2. Accept both invites at https://crates.io/me/pending-invites.
-
-**API token (least privilege)** at https://crates.io/settings/tokens:
-
-- Scope: **only `publish-update`** (both crates already exist). Leave `publish-new`, `yank`, `change-owners` unchecked.
-- Restrict to crates matching `polkadot-rest-api*`.
-- Optional ~90-day expiry; give it an identifiable name (e.g. `rest-api-release`).
+Preserve upstream references used for attribution, dependency identification,
+historical releases and regression fixtures. Use Enjin naming for product
+identity, commands, images and current support links. The rename does not alter
+the GPL-3.0-or-later terms or third-party dependency licenses.

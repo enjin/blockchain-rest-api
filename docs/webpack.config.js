@@ -47,6 +47,8 @@ module.exports = {
     new CopyWebpackPlugin({
       patterns: [
         { from: 'favicon.ico', to: 'favicon.ico' },
+        { from: '../LICENSE', to: 'license.txt' },
+        { from: '../NOTICE', to: 'attribution.txt' },
       ],
     }),
   ],
