@@ -9,6 +9,6 @@ members = [
 [workspace.package]
 version = "0.3.2"
 edition = "2024"
-authors = ["Parity Technologies <admin@parity.io>"]
+authors = ["Enjin", "Parity Technologies <admin@parity.io>"]
 license = "GPL-3.0-or-later"
-repository = "https://github.com/paritytech/polkadot-rest-api"
+repository = "https://github.com/enjin/blockchain-rest-api"

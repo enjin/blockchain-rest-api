@@ -37,7 +37,7 @@ use super::types::{BlockQueryParams, BlockResponse, GetBlockError};
         ("finalizedKey" = Option<bool>, Query, description = "When true (default), include finalized status in response"),
         ("decodedXcmMsgs" = Option<bool>, Query, description = "Decode and include XCM messages"),
         ("paraId" = Option<u32>, Query, description = "Filter XCM messages by parachain ID"),
-        ("useRcBlock" = Option<bool>, Query, description = "Treat blockId as Relay Chain block and return Asset Hub blocks"),
+        ("useRcBlock" = Option<bool>, Query, description = "Treat blockId as Relay Chain block and return Matrixchain blocks"),
         ("useEvmFormat" = Option<bool>, Query, description = "Convert AccountId32 addresses to EVM format for revive pallet events")
     ),
     responses(

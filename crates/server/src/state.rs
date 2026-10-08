@@ -39,6 +39,12 @@ pub enum StateError {
 
     #[error("spec_name not found in runtime version")]
     SpecNameNotFound,
+
+    #[error("Unsupported runtime '{0}'. Supported runtimes: enjin, canary, matrix-enjin, matrix")]
+    UnsupportedChain(String),
+
+    #[error("Expected relay runtime '{expected}', but connected to '{actual}'")]
+    RelayMismatch { expected: String, actual: String },
 }
 
 /// Error type for relay chain connection operations
@@ -95,6 +101,62 @@ pub struct AppState {
     pub relay_chain_rpc: Arc<OnceCell<Arc<SubstrateLegacyRpc>>>,
 }
 
+fn supported_chain_config(
+    configs: &polkadot_rest_api_config::ChainConfigs,
+    spec: &str,
+) -> Result<polkadot_rest_api_config::ChainConfig, StateError> {
+    configs
+        .get(spec)
+        .cloned()
+        .ok_or_else(|| StateError::UnsupportedChain(spec.to_owned()))
+}
+
+fn validate_relay_chain(expected: &str, actual: &str) -> Result<(), StateError> {
+    if !matches!(actual, "enjin" | "canary") || expected != actual {
+        return Err(StateError::RelayMismatch {
+            expected: expected.to_owned(),
+            actual: actual.to_owned(),
+        });
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod ebc_validation_tests {
+    use super::*;
+
+    #[test]
+    fn only_ebc_runtimes_are_supported() {
+        let configs = polkadot_rest_api_config::ChainConfigs::default();
+        for spec in ["enjin", "canary", "matrix-enjin", "matrix"] {
+            assert!(supported_chain_config(&configs, spec).is_ok());
+        }
+        for spec in ["polkadot", "kusama", "asset-hub-polkadot", "unknown"] {
+            assert!(matches!(
+                supported_chain_config(&configs, spec),
+                Err(StateError::UnsupportedChain(_))
+            ));
+        }
+    }
+
+    #[test]
+    fn matrix_connections_require_matching_relay() {
+        assert!(validate_relay_chain("enjin", "enjin").is_ok());
+        assert!(validate_relay_chain("canary", "canary").is_ok());
+        for (expected, actual) in [
+            ("enjin", "canary"),
+            ("canary", "enjin"),
+            ("enjin", "polkadot"),
+            ("enjin", "matrix-enjin"),
+        ] {
+            assert!(matches!(
+                validate_relay_chain(expected, actual),
+                Err(StateError::RelayMismatch { .. })
+            ));
+        }
+    }
+}
+
 impl AppState {
     pub async fn new() -> Result<Self, StateError> {
         let config = SidecarConfig::from_env()?;
@@ -116,11 +178,8 @@ impl AppState {
         // Load all chain configurations
         let chain_configs = Arc::new(polkadot_rest_api_config::ChainConfigs::default());
 
-        // Get configuration for the connected chain (or use defaults)
-        let chain_chain_config = chain_configs
-            .get(&chain_info.spec_name)
-            .cloned()
-            .unwrap_or_default();
+        // Reject unsupported runtimes before constructing the Subxt client.
+        let chain_chain_config = supported_chain_config(&chain_configs, &chain_info.spec_name)?;
 
         // Configure SubstrateConfig with appropriate legacy types based on chain config
         let subxt_config = build_subxt_config(&chain_chain_config.legacy_types);
@@ -287,7 +346,19 @@ impl AppState {
                         .await
                         .map_err(|e| RelayChainError::ConnectionFailed(e.to_string()))?;
 
-                Ok(Arc::new(RpcClient::new(reconnecting_client)))
+                let rpc = RpcClient::new(reconnecting_client);
+                let expected = self
+                    .chain_config
+                    .chain
+                    .relay_chain
+                    .as_deref()
+                    .ok_or(RelayChainError::NotConfigured)?;
+                let info = get_chain_info(&LegacyRpcMethods::new(rpc.clone()))
+                    .await
+                    .map_err(|e| RelayChainError::ConnectionFailed(e.to_string()))?;
+                validate_relay_chain(expected, &info.spec_name)
+                    .map_err(|e| RelayChainError::ConnectionFailed(e.to_string()))?;
+                Ok(Arc::new(rpc))
             })
             .await
             .cloned()
@@ -296,7 +367,7 @@ impl AppState {
     /// Connect to a relay chain with reconnection support and progress logging
     async fn connect_relay_chain(
         relay_url: &str,
-        _relay_chain_name: &str,
+        relay_chain_name: &str,
         chain_configs: &polkadot_rest_api_config::ChainConfigs,
         config: &SidecarConfig,
     ) -> Result<
@@ -318,17 +389,9 @@ impl AppState {
         // Get relay chain info
         let relay_chain_info = get_chain_info(&relay_legacy_rpc).await?;
 
-        // Load relay chain configuration
-        let relay_chain_config = chain_configs
-            .get(&relay_chain_info.spec_name)
-            .cloned()
-            .unwrap_or_else(|| {
-                tracing::warn!(
-                    "No configuration found for relay chain '{}', using defaults",
-                    relay_chain_info.spec_name
-                );
-                polkadot_rest_api_config::ChainConfig::default()
-            });
+        validate_relay_chain(relay_chain_name, &relay_chain_info.spec_name)?;
+        let relay_chain_config =
+            supported_chain_config(chain_configs, &relay_chain_info.spec_name)?;
 
         // Configure SubstrateConfig with appropriate legacy types
         let relay_subxt_config = build_subxt_config(&relay_chain_config.legacy_types);

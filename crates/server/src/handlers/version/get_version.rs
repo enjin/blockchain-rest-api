@@ -15,7 +15,7 @@ pub struct VersionResponse {
     path = "/v1/version",
     tag = "version",
     summary = "API version",
-    description = "Returns the current version of the Polkadot REST API.",
+    description = "Returns the current version of the Enjin Blockchain REST API.",
     responses(
         (status = 200, description = "API version", body = VersionResponse)
     )

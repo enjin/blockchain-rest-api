@@ -1,11 +1,11 @@
 {
-  "name": "substrate-api-sidecar-docs",
-  "description": "Modern documentation for Polkadot REST API",
+  "name": "blockchain-rest-api-docs",
+  "description": "Modern documentation for Enjin Blockchain REST API",
   "private": true,
   "scripts": {
-    "update-spec": "curl -s http://localhost:8080/api-docs/openapi.json > openapi.json",
+    "update-spec": "cargo run --locked --quiet -p polkadot-rest-api --example export_openapi > openapi.json",
     "dev": "webpack serve --mode development",
-    "build": "webpack --mode production"
+    "build": "webpack --mode production && node scripts/package-source.js"
   },
   "devDependencies": {
     "@babel/core": "7.29.6",
@@ -20,6 +20,6 @@
     "webpack-dev-server": "^6.0.0"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=22"
   }
 }

@@ -67,6 +67,11 @@ async fn main() -> Result<(), MainError> {
         loki_url.as_deref(),
     )?;
 
+    tracing::info!(
+        "Enjin Blockchain REST API v{} (enjin-rest-api)",
+        env!("CARGO_PKG_VERSION")
+    );
+
     // Now create application state (connections happen here, warnings will be logged)
     let state = state::AppState::new_with_config(config).await?;
 

@@ -1,6 +1,6 @@
 # Integration Tests
 
-This crate contains integration tests for the Polkadot REST API.
+This crate contains integration tests for the Enjin Blockchain REST API.
 
 ## Test Suites
 
@@ -42,7 +42,7 @@ Runs against Asset Hub Polkadot.
 
 `capabilities`, `chain_config`, `coretime`, `relay_chain_connection` and `use_rc_block` exist as
 test targets but are not wired into `ci.yml`. Each needs its own chain or server setup before it
-can be gated on. Tracked in [#394](https://github.com/paritytech/polkadot-rest-api/issues/394).
+can be gated on. Tracked in [#394](https://github.com/enjin/blockchain-rest-api/issues/394).
 
 ## Running Tests
 
@@ -53,11 +53,11 @@ Start the API server connected to the appropriate chain:
 ```bash
 # For Polkadot
 export SAS_SUBSTRATE_URL=wss://rpc.polkadot.io
-cargo run --release --bin polkadot-rest-api
+cargo run --release --bin enjin-rest-api
 
 # For Kusama
 export SAS_SUBSTRATE_URL=wss://kusama-rpc.polkadot.io
-cargo run --release --bin polkadot-rest-api
+cargo run --release --bin enjin-rest-api
 ```
 
 ### Run Commands
@@ -172,7 +172,7 @@ tests/fixtures/
 
 ```bash
 # Start server connected to the chain
-cargo run --release --bin polkadot-rest-api
+cargo run --release --bin enjin-rest-api
 
 # Run the fixture update tool
 cargo run --bin update_fixtures -- polkadot

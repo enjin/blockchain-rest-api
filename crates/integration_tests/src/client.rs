@@ -164,7 +164,7 @@ impl TestClient {
             "\n{} Make sure the server is running:",
             "hint:".cyan().bold()
         );
-        println!("  cargo run --release --bin polkadot-rest-api\n");
+        println!("  cargo run --release --bin enjin-rest-api\n");
 
         anyhow::bail!(
             "API at {} did not become ready after {} attempts",

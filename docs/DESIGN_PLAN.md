@@ -1,4 +1,6 @@
-# Polkadot REST API - Modern Documentation Design Plan
+> Historical upstream design plan; current documentation uses generated `docs/openapi.json`.
+
+# Enjin Blockchain REST API - Modern Documentation Design Plan
 
 ## Analysis Summary
 
@@ -14,7 +16,7 @@
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                    Header (Fixed)                       │
-│  [Logo] Polkadot REST API        [Search] [Theme Toggle]│
+│  [Logo] Enjin Blockchain REST API        [Search] [Theme Toggle]│
 ├─────────────┬───────────────────────────────────────────┤
 │             │                                           │
 │   Sidebar   │              Main Content                 │
@@ -93,7 +95,7 @@
 ## Implementation Approach
 
 ### YAML Loading Strategy
-**Dynamic fetch** from existing `../docs/src/openapi-v1.yaml`:
+**Dynamic fetch** from existing `../docs/openapi.json`:
 - Keeps single source of truth
 - Easy updates without rebuilding
 - Smaller initial bundle size

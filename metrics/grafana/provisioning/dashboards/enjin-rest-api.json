@@ -81,12 +81,12 @@
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "expr": "rate(polkadot_rest_api_http_request_success[1m])",
+          "expr": "rate(enjin_rest_api_http_request_success[1m])",
           "legendFormat": "Success",
           "refId": "A"
         },
         {
-          "expr": "rate(polkadot_rest_api_http_request_error[1m])",
+          "expr": "rate(enjin_rest_api_http_request_error[1m])",
           "legendFormat": "Errors",
           "refId": "B"
         }
@@ -146,17 +146,17 @@
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "expr": "histogram_quantile(0.50, sum by (le) (rate(polkadot_rest_api_request_duration_seconds_bucket{route=~\"$route\"}[5m])))",
+          "expr": "histogram_quantile(0.50, sum by (le) (rate(enjin_rest_api_request_duration_seconds_bucket{route=~\"$route\"}[5m])))",
           "legendFormat": "p50",
           "refId": "A"
         },
         {
-          "expr": "histogram_quantile(0.95, sum by (le) (rate(polkadot_rest_api_request_duration_seconds_bucket{route=~\"$route\"}[5m])))",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(enjin_rest_api_request_duration_seconds_bucket{route=~\"$route\"}[5m])))",
           "legendFormat": "p95",
           "refId": "B"
         },
         {
-          "expr": "histogram_quantile(0.99, sum by (le) (rate(polkadot_rest_api_request_duration_seconds_bucket{route=~\"$route\"}[5m])))",
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(enjin_rest_api_request_duration_seconds_bucket{route=~\"$route\"}[5m])))",
           "legendFormat": "p99",
           "refId": "C"
         }
@@ -216,17 +216,17 @@
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "expr": "histogram_quantile(0.50, sum by (le) (rate(polkadot_rest_api_response_size_bytes_bucket[5m])))",
+          "expr": "histogram_quantile(0.50, sum by (le) (rate(enjin_rest_api_response_size_bytes_bucket[5m])))",
           "legendFormat": "p50",
           "refId": "A"
         },
         {
-          "expr": "histogram_quantile(0.95, sum by (le) (rate(polkadot_rest_api_response_size_bytes_bucket[5m])))",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(enjin_rest_api_response_size_bytes_bucket[5m])))",
           "legendFormat": "p95",
           "refId": "B"
         },
         {
-          "expr": "histogram_quantile(0.99, sum by (le) (rate(polkadot_rest_api_response_size_bytes_bucket[5m])))",
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(enjin_rest_api_response_size_bytes_bucket[5m])))",
           "legendFormat": "p99",
           "refId": "C"
         }
@@ -286,7 +286,7 @@
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "expr": "sum by (route) (rate(polkadot_rest_api_request_duration_seconds_count[5m]))",
+          "expr": "sum by (route) (rate(enjin_rest_api_request_duration_seconds_count[5m]))",
           "legendFormat": "{{route}}",
           "refId": "A"
         }
@@ -346,7 +346,7 @@
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum by (route, le) (rate(polkadot_rest_api_request_duration_seconds_bucket[5m])))",
+          "expr": "histogram_quantile(0.95, sum by (route, le) (rate(enjin_rest_api_request_duration_seconds_bucket[5m])))",
           "legendFormat": "{{route}}",
           "refId": "A"
         }
@@ -420,12 +420,12 @@
       },
       "targets": [
         {
-          "expr": "sum(rate(polkadot_rest_api_request_duration_seconds_count{route=~\"$route\"}[1m]))",
+          "expr": "sum(rate(enjin_rest_api_request_duration_seconds_count{route=~\"$route\"}[1m]))",
           "legendFormat": "RPS (success)",
           "refId": "A"
         },
         {
-          "expr": "rate(polkadot_rest_api_http_request_error[1m])",
+          "expr": "rate(enjin_rest_api_http_request_error[1m])",
           "legendFormat": "Error rate",
           "refId": "B"
         }
@@ -468,7 +468,7 @@
       },
       "targets": [
         {
-          "expr": "sum(increase(polkadot_rest_api_request_duration_seconds_bucket{route=~\"$route\"}[1m])) by (le)",
+          "expr": "sum(increase(enjin_rest_api_request_duration_seconds_bucket{route=~\"$route\"}[1m])) by (le)",
           "legendFormat": "{{le}}",
           "refId": "A",
           "format": "heatmap"
@@ -537,7 +537,7 @@
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "expr": "rate(namedprocess_namegroup_cpu_seconds_total{groupname=~\"polkadot-rest-api|substrate-api-sidecar\"}[1m])",
+          "expr": "rate(namedprocess_namegroup_cpu_seconds_total{groupname=~\"enjin-rest-api|substrate-api-sidecar\"}[1m])",
           "legendFormat": "{{groupname}} ({{mode}})",
           "refId": "A"
         }
@@ -597,7 +597,7 @@
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "expr": "namedprocess_namegroup_memory_bytes{groupname=~\"polkadot-rest-api|substrate-api-sidecar\", memtype=\"resident\"}",
+          "expr": "namedprocess_namegroup_memory_bytes{groupname=~\"enjin-rest-api|substrate-api-sidecar\", memtype=\"resident\"}",
           "legendFormat": "{{groupname}} RSS",
           "refId": "A"
         }
@@ -655,7 +655,7 @@
       },
       "targets": [
         {
-          "expr": "deriv(namedprocess_namegroup_memory_bytes{groupname=~\"polkadot-rest-api|substrate-api-sidecar\", memtype=\"resident\"}[5m])",
+          "expr": "deriv(namedprocess_namegroup_memory_bytes{groupname=~\"enjin-rest-api|substrate-api-sidecar\", memtype=\"resident\"}[5m])",
           "legendFormat": "Memory growth rate",
           "refId": "A"
         }
@@ -725,12 +725,12 @@
       },
       "targets": [
         {
-          "expr": "sum(rate(namedprocess_namegroup_read_bytes_total{groupname=~\"polkadot-rest-api|substrate-api-sidecar\"}[1m]))",
+          "expr": "sum(rate(namedprocess_namegroup_read_bytes_total{groupname=~\"enjin-rest-api|substrate-api-sidecar\"}[1m]))",
           "legendFormat": "I/O Read",
           "refId": "A"
         },
         {
-          "expr": "sum(rate(namedprocess_namegroup_write_bytes_total{groupname=~\"polkadot-rest-api|substrate-api-sidecar\"}[1m]))",
+          "expr": "sum(rate(namedprocess_namegroup_write_bytes_total{groupname=~\"enjin-rest-api|substrate-api-sidecar\"}[1m]))",
           "legendFormat": "I/O Write",
           "refId": "B"
         }
@@ -812,12 +812,12 @@
       },
       "targets": [
         {
-          "expr": "sum(rate(polkadot_rest_api_request_duration_seconds_count{route=~\"$route\"}[1m]))",
+          "expr": "sum(rate(enjin_rest_api_request_duration_seconds_count{route=~\"$route\"}[1m]))",
           "legendFormat": "RPS",
           "refId": "A"
         },
         {
-          "expr": "rate(namedprocess_namegroup_cpu_seconds_total{groupname=~\"polkadot-rest-api|substrate-api-sidecar\"}[1m])",
+          "expr": "rate(namedprocess_namegroup_cpu_seconds_total{groupname=~\"enjin-rest-api|substrate-api-sidecar\"}[1m])",
           "legendFormat": "CPU ({{groupname}})",
           "refId": "B"
         }
@@ -890,12 +890,12 @@
       },
       "targets": [
         {
-          "expr": "sum(rate(polkadot_rest_api_request_duration_seconds_count{route=~\"$route\"}[1m]))",
+          "expr": "sum(rate(enjin_rest_api_request_duration_seconds_count{route=~\"$route\"}[1m]))",
           "legendFormat": "RPS",
           "refId": "A"
         },
         {
-          "expr": "namedprocess_namegroup_memory_bytes{groupname=~\"polkadot-rest-api|substrate-api-sidecar\", memtype=\"resident\"}",
+          "expr": "namedprocess_namegroup_memory_bytes{groupname=~\"enjin-rest-api|substrate-api-sidecar\", memtype=\"resident\"}",
           "legendFormat": "Memory ({{groupname}})",
           "refId": "B"
         }
@@ -984,22 +984,22 @@
       },
       "targets": [
         {
-          "expr": "histogram_quantile(0.50, sum by (le) (rate(polkadot_rest_api_request_duration_seconds_bucket{route=~\"$route\"}[1m])))",
+          "expr": "histogram_quantile(0.50, sum by (le) (rate(enjin_rest_api_request_duration_seconds_bucket{route=~\"$route\"}[1m])))",
           "legendFormat": "p50",
           "refId": "A"
         },
         {
-          "expr": "histogram_quantile(0.95, sum by (le) (rate(polkadot_rest_api_request_duration_seconds_bucket{route=~\"$route\"}[1m])))",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(enjin_rest_api_request_duration_seconds_bucket{route=~\"$route\"}[1m])))",
           "legendFormat": "p95",
           "refId": "B"
         },
         {
-          "expr": "histogram_quantile(0.99, sum by (le) (rate(polkadot_rest_api_request_duration_seconds_bucket{route=~\"$route\"}[1m])))",
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(enjin_rest_api_request_duration_seconds_bucket{route=~\"$route\"}[1m])))",
           "legendFormat": "p99",
           "refId": "C"
         },
         {
-          "expr": "namedprocess_namegroup_memory_bytes{groupname=~\"polkadot-rest-api|substrate-api-sidecar\", memtype=\"resident\"}",
+          "expr": "namedprocess_namegroup_memory_bytes{groupname=~\"enjin-rest-api|substrate-api-sidecar\", memtype=\"resident\"}",
           "legendFormat": "Memory ({{groupname}})",
           "refId": "D"
         }
@@ -1023,7 +1023,7 @@
           "type": "prometheus",
           "uid": "PBFA97CFB590B2093"
         },
-        "definition": "label_values(polkadot_rest_api_request_duration_seconds_count, route)",
+        "definition": "label_values(enjin_rest_api_request_duration_seconds_count, route)",
         "hide": 0,
         "includeAll": true,
         "label": "Endpoint",
@@ -1031,7 +1031,7 @@
         "name": "route",
         "options": [],
         "query": {
-          "query": "label_values(polkadot_rest_api_request_duration_seconds_count, route)",
+          "query": "label_values(enjin_rest_api_request_duration_seconds_count, route)",
           "refId": "StandardVariableQuery"
         },
         "refresh": 2,
@@ -1048,8 +1048,8 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "Polkadot REST API",
-  "uid": "polkadot-rest-api",
+  "title": "Enjin Blockchain REST API",
+  "uid": "enjin-rest-api",
   "version": 1,
   "weekStart": ""
 }

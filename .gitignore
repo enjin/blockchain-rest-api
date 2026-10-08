@@ -25,3 +25,6 @@ data/
 
 # IDEs
 .idea
+# Generated documentation source archive and Python cache
+docs/dist/source.tar.gz
+**/__pycache__/

@@ -18,10 +18,10 @@ services:
     read_only: true
     restart: on-failure
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     environment:
-      SAS_SUBSTRATE_MULTI_CHAIN_URL: '[{"url":"wss://rpc.polkadot.io","type":"relay"}]'
-      SAS_SUBSTRATE_URL: wss://asset-hub-polkadot.dotters.network
+      SAS_SUBSTRATE_MULTI_CHAIN_URL: ${SAS_SUBSTRATE_MULTI_CHAIN_URL:-[]}
+      SAS_SUBSTRATE_URL: ${SAS_SUBSTRATE_URL:-wss://rpc.relay.blockchain.enjin.io}
       SAS_METRICS_ENABLED: "true"
 
   process-exporter:
@@ -36,7 +36,7 @@ services:
       - "--procfs=/host/proc"
       - "-config.path=/config/process-exporter.yml"
     ports:
-      - "9256:9256"
+      - "127.0.0.1:9256:9256"
 
   prometheus:
     container_name: prometheus
@@ -44,7 +44,7 @@ services:
     volumes:
       - ./metrics/prometheus-docker.yml:/etc/prometheus/prometheus.yml:ro
     ports:
-      - "9090:9090"
+      - "127.0.0.1:9090:9090"
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"
@@ -58,7 +58,7 @@ services:
     volumes:
       - ./metrics/grafana/provisioning:/etc/grafana/provisioning:ro
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin

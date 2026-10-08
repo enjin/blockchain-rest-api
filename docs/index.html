@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Polkadot REST API Documentation</title>
-    <meta name="description" content="Modern documentation for Polkadot REST API - REST service for blockchain nodes built using Substrate's FRAME framework.">
-    
+    <title>Enjin Blockchain REST API Documentation</title>
+    <meta name="description" content="Modern documentation for Enjin Blockchain REST API - REST service for blockchain nodes built using Substrate's FRAME framework.">
+
     <!-- Preload critical resources -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://unpkg.com">
-    
+
     <!-- Google Fonts - Inter for clean, modern typography -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="favicon.ico">
-    
+
     <!-- Styles will be injected by webpack -->
 </head>
 <body>
@@ -42,7 +42,7 @@
                         </svg>
                     </div>
                     <div class="brand-text">
-                        <h1 class="brand-title">Polkadot REST API</h1>
+                        <h1 class="brand-title">Enjin Blockchain REST API</h1>
                         <span class="brand-subtitle">REST API Documentation</span>
                     </div>
                 </div>
@@ -83,10 +83,6 @@
                     <div class="server-selector">
                         <label for="server-select" class="server-label">Server Environment:</label>
                         <select id="server-select" class="server-select">
-                            <option value="0">Polkadot Public</option>
-                            <option value="1">Kusama Public</option>
-                            <option value="2">Polkadot Asset Hub</option>
-                            <option value="3">Kusama Asset Hub</option>
                             <option value="4" selected>Localhost</option>
                         </select>
                     </div>
@@ -126,21 +122,13 @@
                                 </button>
                             </div>
                             <ul id="guides-nav" class="nav-list collapsed">
-                                <li class="nav-item">
-                                    <a href="#guide-asset-hub-migration" class="nav-link" data-guide="asset-hub-migration">
-                                        <span>Asset Hub Migration</span>
-                                    </a>
-                                </li>
+
                                 <li class="nav-item">
                                     <a href="#guide-openapi-utoipa" class="nav-link" data-guide="openapi-utoipa">
                                         <span>OpenAPI &amp; utoipa</span>
                                     </a>
                                 </li>
-                                <li class="nav-item">
-                                    <a href="#guide-adding-benchmarks" class="nav-link" data-guide="adding-benchmarks">
-                                        <span>Adding Benchmarks</span>
-                                    </a>
-                                </li>
+
                                 <li class="nav-item">
                                     <a href="#guide-migration" class="nav-link" data-guide="migration">
                                         <span>Migration Guide</span>
@@ -178,8 +166,8 @@
                             </div>
                             <ul id="resources-nav" class="nav-list collapsed">
                                 <li class="nav-item">
-                                    <a href="https://paritytech.github.io/polkadot-rest-api/dev/bench/" class="nav-link" target="_blank" rel="noopener noreferrer">
-                                        <span>Benchmarks ↗</span>
+                                    <a href="attribution.txt" class="nav-link" target="_blank" rel="noopener noreferrer">
+                                        <span>Upstream attribution ↗</span>
                                     </a>
                                 </li>
                             </ul>
@@ -230,10 +218,10 @@
                     <!-- Welcome/Overview Section -->
                     <section id="overview" class="content-section active">
                         <div class="section-header">
-                            <h1>Polkadot REST API</h1>
+                            <h1>Enjin Blockchain REST API</h1>
                             <div class="section-meta">
                                 <span class="version-badge" id="version-display">v0.3.2</span>
-                                <a href="https://github.com/paritytech/polkadot-rest-api" target="_blank" rel="noopener" class="github-link">
+                                <a href="https://github.com/enjin/blockchain-rest-api" target="_blank" rel="noopener" class="github-link">
                                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                                         <path fill-rule="evenodd" clip-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8C0 11.54 2.29 14.53 5.47 15.59C5.87 15.66 6.02 15.42 6.02 15.21C6.02 15.02 6.01 14.39 6.01 13.72C4 14.09 3.48 13.23 3.32 12.78C3.23 12.55 2.84 11.84 2.5 11.65C2.22 11.5 1.82 11.13 2.49 11.12C3.12 11.11 3.57 11.7 3.72 11.94C4.44 13.15 5.59 12.81 6.05 12.6C6.12 12.08 6.33 11.73 6.56 11.53C4.78 11.33 2.92 10.64 2.92 7.58C2.92 6.71 3.23 5.99 3.74 5.43C3.66 5.23 3.38 4.41 3.82 3.31C3.82 3.31 4.49 3.1 6.02 4.13C6.66 3.95 7.34 3.86 8.02 3.86C8.7 3.86 9.38 3.95 10.02 4.13C11.55 3.09 12.22 3.31 12.22 3.31C12.66 4.41 12.38 5.23 12.3 5.43C12.81 5.99 13.12 6.7 13.12 7.58C13.12 10.65 11.25 11.33 9.47 11.53C9.76 11.78 10.01 12.26 10.01 13.01C10.01 14.08 10 14.94 10 15.21C10 15.42 10.15 15.67 10.55 15.59C13.71 14.53 16 11.53 16 8C16 3.58 12.42 0 8 0Z" fill="currentColor"/>
                                     </svg>
@@ -250,7 +238,7 @@
                             <div class="features-grid">
                                 <div class="feature-card">
                                     <h3>Account Management</h3>
-                                    <p>Query account balances, staking info, and transaction history</p>
+                                    <p>Query native account balances and supported runtime staking information</p>
                                 </div>
                                 <div class="feature-card">
                                     <h3>Block Explorer</h3>
@@ -271,19 +259,19 @@
                                 <div class="code-block">
                                     <div class="code-header">
                                         <span>Example Request</span>
-                                        <button class="copy-button" data-copy="curl http://localhost:8080/blocks/head">
+                                        <button class="copy-button" data-copy="curl http://localhost:8080/v1/blocks/head">
                                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                                                 <path d="M13.5 4.5H6.5C5.67157 4.5 5 5.17157 5 6V13C5 13.8284 5.67157 14.5 6.5 14.5H13.5C14.3284 14.5 15 13.8284 15 13V6C15 5.17157 14.3284 4.5 13.5 4.5Z" stroke="currentColor" stroke-width="1.5"/>
                                                 <path d="M3 10.5C2.17157 10.5 1.5 9.82843 1.5 9V2C1.5 1.17157 2.17157 0.5 3 0.5H10C10.8284 0.5 11.5 1.17157 11.5 2" stroke="currentColor" stroke-width="1.5"/>
                                             </svg>
                                         </button>
                                     </div>
-                                    <pre><code>curl http://localhost:8080/blocks/head</code></pre>
+                                    <pre><code>curl http://localhost:8080/v1/blocks/head</code></pre>
                                 </div>
-                                
+
                                 <div class="notice-box info">
                                     <div class="notice-content">
-                                        <strong>Getting Started:</strong> Use the example cURL commands to test endpoints against your running Polkadot REST API instance.
+                                        <strong>Getting Started:</strong> Use the example cURL commands to test endpoints against your running Enjin Blockchain REST API instance.
                                     </div>
                                 </div>
                             </div>
@@ -296,7 +284,7 @@
                             <h1>Getting Started</h1>
                             <div class="section-meta">
                                 <span class="version-badge" id="version-display-gs">v0.3.2</span>
-                                <a href="https://github.com/paritytech/polkadot-rest-api" target="_blank" rel="noopener" class="github-link">
+                                <a href="https://github.com/enjin/blockchain-rest-api" target="_blank" rel="noopener" class="github-link">
                                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                                         <path fill-rule="evenodd" clip-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8C0 11.54 2.29 14.53 5.47 15.59C5.87 15.66 6.02 15.42 6.02 15.21C6.02 15.02 6.01 14.39 6.01 13.72C4 14.09 3.48 13.23 3.32 12.78C3.23 12.55 2.84 11.84 2.5 11.65C2.22 11.5 1.82 11.13 2.49 11.12C3.12 11.11 3.57 11.7 3.72 11.94C4.44 13.15 5.59 12.81 6.05 12.6C6.12 12.08 6.33 11.73 6.56 11.53C4.78 11.33 2.92 10.64 2.92 7.58C2.92 6.71 3.23 5.99 3.74 5.43C3.66 5.23 3.38 4.41 3.82 3.31C3.82 3.31 4.49 3.1 6.02 4.13C6.66 3.95 7.34 3.86 8.02 3.86C8.7 3.86 9.38 3.95 10.02 4.13C11.55 3.09 12.22 3.31 12.22 3.31C12.66 4.41 12.38 5.23 12.3 5.43C12.81 5.99 13.12 6.7 13.12 7.58C13.12 10.65 11.25 11.33 9.47 11.53C9.76 11.78 10.01 12.26 10.01 13.01C10.01 14.08 10 14.94 10 15.21C10 15.42 10.15 15.67 10.55 15.59C13.71 14.53 16 11.53 16 8C16 3.58 12.42 0 8 0Z" fill="currentColor"/>
                                     </svg>
@@ -307,7 +295,7 @@
 
                         <div class="getting-started-content">
                             <h3>Installation & Setup</h3>
-                            
+
                             <div class="setup-steps">
                                 <div class="setup-step">
                                     <div class="step-number">1</div>
@@ -316,16 +304,18 @@
                                         <div class="code-block">
                                             <div class="code-header">
                                                 <span>Clone &amp; Build</span>
-                                                <button class="copy-button" data-copy="git clone https://github.com/paritytech/polkadot-rest-api.git&#10;cd polkadot-rest-api&#10;cargo build --release --package server">
+                                                <button class="copy-button" data-copy="git clone https://github.com/enjin/blockchain-rest-api.git&#10;cd blockchain-rest-api&#10;npm ci --prefix docs&#10;npm run build --prefix docs&#10;cargo build --locked --release --package polkadot-rest-api">
                                                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                                                         <path d="M13.5 4.5H6.5C5.67157 4.5 5 5.17157 5 6V13C5 13.8284 5.67157 14.5 6.5 14.5H13.5C14.3284 14.5 15 13.8284 15 13V6C15 5.17157 14.3284 4.5 13.5 4.5Z" stroke="currentColor" stroke-width="1.5"/>
                                                         <path d="M3 10.5C2.17157 10.5 1.5 9.82843 1.5 9V2C1.5 1.17157 2.17157 0.5 3 0.5H10C10.8284 0.5 11.5 1.17157 11.5 2" stroke="currentColor" stroke-width="1.5"/>
                                                     </svg>
                                                 </button>
                                             </div>
-                                            <pre><code>git clone https://github.com/paritytech/polkadot-rest-api.git
-cd polkadot-rest-api
-cargo build --release --package server</code></pre>
+                                            <pre><code>git clone https://github.com/enjin/blockchain-rest-api.git
+cd blockchain-rest-api
+npm ci --prefix docs
+npm run build --prefix docs
+cargo build --locked --release --package polkadot-rest-api</code></pre>
                                         </div>
                                         <p>or run with Docker:</p>
                                         <div class="code-block">
@@ -350,15 +340,15 @@ cargo build --release --package server</code></pre>
                                         <div class="code-block">
                                             <div class="code-header">
                                                 <span>Run Server</span>
-                                                <button class="copy-button" data-copy="export SAS_SUBSTRATE_URL=wss://rpc.polkadot.io&#10;cargo run --release --bin polkadot-rest-api">
+                                                <button class="copy-button" data-copy="export SAS_SUBSTRATE_URL=wss://rpc.relay.blockchain.enjin.io&#10;cargo run --release --bin enjin-rest-api">
                                                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                                                         <path d="M13.5 4.5H6.5C5.67157 4.5 5 5.17157 5 6V13C5 13.8284 5.67157 14.5 6.5 14.5H13.5C14.3284 14.5 15 13.8284 15 13V6C15 5.17157 14.3284 4.5 13.5 4.5Z" stroke="currentColor" stroke-width="1.5"/>
                                                         <path d="M3 10.5C2.17157 10.5 1.5 9.82843 1.5 9V2C1.5 1.17157 2.17157 0.5 3 0.5H10C10.8284 0.5 11.5 1.17157 11.5 2" stroke="currentColor" stroke-width="1.5"/>
                                                     </svg>
                                                 </button>
                                             </div>
-                                            <pre><code>export SAS_SUBSTRATE_URL=wss://rpc.polkadot.io
-cargo run --release --bin polkadot-rest-api</code></pre>
+                                            <pre><code>export SAS_SUBSTRATE_URL=wss://rpc.relay.blockchain.enjin.io
+cargo run --release --bin enjin-rest-api</code></pre>
                                         </div>
                                         <p>The service will start on <code>http://localhost:8080</code> by default. Set <code>SAS_SUBSTRATE_URL</code> to point to your Substrate node.</p>
                                     </div>
@@ -388,13 +378,13 @@ cargo run --release --bin polkadot-rest-api</code></pre>
                             <div class="configuration-section">
                                 <h3>Advanced Configuration</h3>
                                 <p>The API server is configured through environment variables. Here are the most commonly used settings:</p>
-                                
+
                                 <div class="config-example">
                                     <h4>Basic Configuration</h4>
                                     <div class="code-block">
                                         <div class="code-header">
                                             <span>Environment Variables</span>
-                                            <button class="copy-button" data-copy="export SAS_SUBSTRATE_URL=wss://polkadot-rpc.polkadot.io&#10;export SAS_EXPRESS_PORT=8080&#10;export SAS_LOG_LEVEL=info">
+                                            <button class="copy-button" data-copy="export SAS_SUBSTRATE_URL=wss://rpc.relay.blockchain.enjin.io&#10;export SAS_EXPRESS_PORT=8080&#10;export SAS_LOG_LEVEL=info">
                                                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                                                     <path d="M13.5 4.5H6.5C5.67157 4.5 5 5.17157 5 6V13C5 13.8284 5.67157 14.5 6.5 14.5H13.5C14.3284 14.5 15 13.8284 15 13V6C15 5.17157 14.3284 4.5 13.5 4.5Z" stroke="currentColor" stroke-width="1.5"/>
                                                     <path d="M3 10.5C2.17157 10.5 1.5 9.82843 1.5 9V2C1.5 1.17157 2.17157 0.5 3 0.5H10C10.8284 0.5 11.5 1.17157 11.5 2" stroke="currentColor" stroke-width="1.5"/>
@@ -402,7 +392,7 @@ cargo run --release --bin polkadot-rest-api</code></pre>
                                             </button>
                                         </div>
                                         <pre><code># Connect to different networks
-export SAS_SUBSTRATE_URL=wss://polkadot-rpc.polkadot.io
+export SAS_SUBSTRATE_URL=wss://rpc.relay.blockchain.enjin.io
 
 # Change server port
 export SAS_EXPRESS_PORT=8080
@@ -452,7 +442,7 @@ export SAS_LOG_LEVEL=info</code></pre>
                                             <li>Multi-signature operations</li>
                                         </ul>
                                     </div>
-                                    
+
                                     <div class="feature-card detailed">
                                         <h3>Block Explorer</h3>
                                         <p>Deep blockchain data access and exploration tools</p>
@@ -464,7 +454,7 @@ export SAS_LOG_LEVEL=info</code></pre>
                                             <li>Real-time finality tracking</li>
                                         </ul>
                                     </div>
-                                    
+
                                     <div class="feature-card detailed">
                                         <h3>Runtime Access</h3>
                                         <p>Query runtime metadata and pallet information</p>
@@ -476,7 +466,7 @@ export SAS_LOG_LEVEL=info</code></pre>
                                             <li>Call information</li>
                                         </ul>
                                     </div>
-                                    
+
                                     <div class="feature-card detailed">
                                         <h3>Transaction Tools</h3>
                                         <p>Transaction construction and fee estimation</p>
@@ -493,20 +483,7 @@ export SAS_LOG_LEVEL=info</code></pre>
                     </section>
 
                     <!-- Asset Hub Migration Guide -->
-                    <section id="guide-asset-hub-migration" class="content-section" style="display: none;">
-                        <div class="section-header">
-                            <h1>Asset Hub Migration Guide</h1>
-                            <div class="section-meta">
-                                <span class="version-badge">Guide</span>
-                            </div>
-                        </div>
 
-                        <div class="guide-content">
-                            <p class="lead">
-                                Asset Hub migration guide content will go here.
-                            </p>
-                        </div>
-                    </section>
 
                     <!-- useRcBlock Specification -->
                     <section id="spec-useRcBlock" class="content-section" style="display: none;">
@@ -535,7 +512,7 @@ export SAS_LOG_LEVEL=info</code></pre>
 
                         <div class="guide-content">
                             <p class="lead">
-                                Comprehensive guide to all Polkadot REST API configuration options.
+                                Comprehensive guide to all Enjin Blockchain REST API configuration options.
                             </p>
                         </div>
                     </section>
@@ -557,19 +534,7 @@ export SAS_LOG_LEVEL=info</code></pre>
                     </section>
 
                     <!-- Adding Benchmarks Guide -->
-                    <section id="guide-adding-benchmarks" class="content-section" style="display: none;">
-                        <div class="section-header">
-                            <h1>Adding Benchmarks</h1>
-                            <div class="section-meta">
-                                <span class="version-badge">Guide</span>
-                            </div>
-                        </div>
-                        <div class="guide-content">
-                            <p class="lead">
-                                Guide to adding performance benchmarks for new API endpoints.
-                            </p>
-                        </div>
-                    </section>
+
 
                     <!-- Migration Guide -->
                     <section id="guide-migration" class="content-section" style="display: none;">
@@ -581,7 +546,7 @@ export SAS_LOG_LEVEL=info</code></pre>
                         </div>
                         <div class="guide-content">
                             <p class="lead">
-                                Migration guide from Substrate API Sidecar to Polkadot REST API.
+                                Migration guide from Substrate API Sidecar to Enjin Blockchain REST API.
                             </p>
                         </div>
                     </section>
@@ -594,5 +559,6 @@ export SAS_LOG_LEVEL=info</code></pre>
     </div>
 
     <!-- Main bundle will be injected by webpack -->
+<footer>Fork of Polkadot REST API by Parity Technologies. <a href="attribution.txt">Modification notices</a> · <a href="license.txt">GPL-3.0-or-later</a> · <a href="source.tar.gz">Documentation source</a> · <a href="bundle.js.LICENSE.txt">Third-party notices</a></footer>
 </body>
 </html>
