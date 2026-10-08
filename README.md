@@ -57,6 +57,31 @@ export SAS_SUBSTRATE_MULTI_CHAIN_URL='[{"url":"wss://rpc.relay.blockchain.enjin.
 Use a Canary relay URL for Canary Matrixchain. Supply an archive RPC when
 querying historical state that a pruned node no longer retains.
 
+## Logging
+
+`SAS_LOG_LEVEL` accepts `tracing_subscriber` filter directives as well as a
+single level:
+
+```sh
+# Transaction submissions, including their hash, duration and outcome.
+export SAS_LOG_LEVEL=info
+
+# Include connection drops and reconnects.
+export SAS_LOG_LEVEL="info,subxt-reconnecting-rpc-client=debug"
+
+# Include individual RPC requests and responses; this is verbose.
+export SAS_LOG_LEVEL="info,subxt-reconnecting-rpc-client=debug,subxt=debug,subxt_rpcs=trace,jsonrpsee=trace"
+```
+
+The reconnecting RPC client uses the target `subxt-reconnecting-rpc-client`;
+`subxt_rpcs=debug` alone does not enable its connection logs. Connection closure,
+successful reconnection and failed reconnection messages are emitted at `debug`
+and are therefore absent at plain `info`.
+
+Submissions to `POST /v1/transaction` log the outgoing request and its outcome,
+including the extrinsic hash for correlation. Rejections and acceptances taking
+longer than five seconds log at `warn`; normal submissions log at `info`.
+
 ## Test
 
 ```sh
