@@ -7,7 +7,7 @@ their date in NOTICE. Historical CHANGELOG entries describe upstream releases.
 
 ## Prepare a fork release
 
-1. Choose an Enjin release version; the current 0.3.2 is inherited from upstream.
+1. Choose an Enjin release version; the current 0.3.3 is based on upstream v0.3.3.
 2. Update the workspace version in Cargo.toml, local dependency versions in the
    server/integration-test manifests, and the OpenAPI version annotation. Update
    the Dockerfile's fallback VERSION. Refresh Cargo.lock and regenerate the spec.

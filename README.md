@@ -138,5 +138,4 @@ the binary embeds `docs/dist`. CI checks the committed JSON for drift and builds
 the docs and release binary. Docker builds docs from source in its own stage.
 
 See [RELEASE.md](RELEASE.md) for container publishing and corresponding-source
-requirements. The inherited version
-is 0.3.2; select a fork release version before creating the first release tag.
+requirements. Version 0.3.3 rebases the Enjin fork onto upstream v0.3.3.

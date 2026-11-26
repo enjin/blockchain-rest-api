@@ -19,7 +19,7 @@ RUN tar -czf /tmp/source.tar.gz .
 RUN cargo build --locked --release --package polkadot-rest-api
 
 FROM docker.io/library/debian:bookworm-slim
-ARG VERSION="0.3.2"
+ARG VERSION="0.3.3"
 ARG VCS_REF="unknown"
 ARG BUILD_DATE=""
 LABEL org.opencontainers.image.title="Enjin Blockchain REST API" \

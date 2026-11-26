@@ -6,6 +6,14 @@ See [standard-version](https://github.com/conventional-changelog/standard-versio
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## Enjin 0.3.3 (2026-11-26)
+
+- Rebase the Enjin Blockchain fork onto upstream v0.3.3, including the v5 General
+  extrinsic signature fix described below.
+- Preserve Enjin and Canary Relaychain/Matrixchain support, public routes, branding,
+  packaging, and CI configuration.
+- Regenerate the OpenAPI schema and embedded documentation for version 0.3.3.
+
 ## [0.3.3] (2026-10-27)
 
 ### Fixes
